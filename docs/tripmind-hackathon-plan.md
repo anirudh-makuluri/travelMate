@@ -60,8 +60,7 @@ Three-panel layout:
 - **Auth0 for AI Agents** — agent gets scoped tokens to act on behalf of user (read preferences, post blogs)
 
 ### Database
-- **Supabase (PostgreSQL)** — users, trips, diary entries, blog posts, preferences
-- **Supabase pgvector** — vector embeddings for past trips and blog posts for semantic retrieval
+- **Firestore** — users, trips, diary entries, blog posts, preferences
 
 ### External APIs
 - **Google Flights API / SerpAPI** — live flight prices
