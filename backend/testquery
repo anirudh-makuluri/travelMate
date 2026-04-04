@@ -1,0 +1,13 @@
+$body = @{
+  prompt = "Plan me a relaxed 3 day trip in Kyoto with temples, local food, and a moderate budget."
+  language_code = "en"
+  region_code = "US"
+  currency_code = "USD"
+  transport_preference = "optimize_for_time"
+} | ConvertTo-Json -Depth 6
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://127.0.0.1:8000/api/v1/planner/planning-state" `
+  -ContentType "application/json" `
+  -Body $body
