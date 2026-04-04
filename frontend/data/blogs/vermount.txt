@@ -1,0 +1,36 @@
+Travel Diary: The Vermonter Fall Tech-Detox
+Day 1: Escaping the Concrete Grid
+Date: Thursday
+Wake Up: 7:30 AM (Sleep: 7.5 hours)
+I started the trip in New York City. To fuel up before a long travel day, I grabbed a quick breakfast near Penn Station: three scrambled eggs with spinach and a black iced coffee ($12.50). Total macros: 25g protein, 15g fat, minimal carbs.
+
+By 10:45 AM, I was inside the massive, glass-ceilinged Moynihan Train Hall. I boarded the northbound Amtrak Vermonter at 11:30 AM. I had booked a coach ticket in advance for $65.00. I specifically chose a right-side window seat to get the best views of the Connecticut River. Once we cleared the urban sprawl of the Bronx and Connecticut, the landscape opened up into rolling forested river valleys. The train’s Wi-Fi was spotty through the heavy tree cover, so I spent the five-hour journey offline, sketching out system architecture diagrams for my RAG project.
+
+The train pulled into Brattleboro, Vermont, exactly at 4:32 PM. The air was immediately crisper—around 55°F. I walked five minutes from the station and checked into The Latchis Hotel ($185.00/night). At 6:00 PM, I walked over to Retreat Farm, just in time to catch the sunset over the meadows. I walked roughly 1.5 miles of trails before heading into downtown Brattleboro for dinner at 7:30 PM. I ate at Peter Havens, ordering a beautiful pan-seared duck breast but asked them to substitute the wild rice for extra roasted root vegetables to keep the carb count strictly in check ($42.00 + $9 tip = $51.00). Walked a total of 12,000 steps today. Asleep by 10:30 PM.
+
+Day 2: Paddling and the Green Mountain Express
+Date: Friday
+Wake Up: 7:00 AM (Sleep: 8.5 hours)
+I woke up feeling completely refreshed. I hit a local cafe at 8:00 AM for two hard-boiled eggs and a large black coffee ($6.50). By 9:00 AM, I was down by the Connecticut River. I rented a kayak from the Vermont Canoe Touring Center for the morning ($35.00). Paddling against the mild current was a fantastic upper-body workout, and the river was dead quiet except for the occasional heron. I spent exactly two hours on the water.
+
+At 12:30 PM, I grabbed a quick lunch at the Brattleboro Food Co-op: a massive salad loaded with grilled chicken, pumpkin seeds, and olive oil ($14.00). At 1:05 PM, I was back on the platform boarding the northbound Vermonter. The ticket from Brattleboro to the Waterbury-Stowe station was incredibly cheap at just $19.00. This three-hour leg is stunning—the train cuts directly through the heart of the Green Mountains, surrounded by dense, unbroken pine forests.
+
+We arrived at the Waterbury-Stowe station at 4:05 PM. I ordered an Uber ($25.00) for the 15-minute drive north into the village of Stowe. Stowe is a classic New England mountain town nestled in a valley. I checked into the Green Mountain Inn at 5:00 PM ($245.00/night). Dinner was at The Alchemist Brewery at 6:30 PM. While they are famous for their IPAs, I skipped the beer to stay on diet and instead demolished a double-patty smash burger on a bed of greens instead of a bun from the local food truck parked outside ($18.00). Asleep by 11:00 PM.
+
+Day 3: High Elevation and Hidden Gorges
+Date: Saturday
+Wake Up: 6:30 AM (Sleep: 7.5 hours)
+Today was all about altitude. Breakfast at the inn was a three-egg omelet with ham and cheddar cheese ($16.00). At 8:00 AM, I caught a local shuttle ($5.00) up to Mount Mansfield State Forest. My target was Bingham Falls. The hike is relatively short but involves a steep, scrambling descent into a dense pine forest gorge. The water cascades 40 feet into a freezing, crystal-clear pool. I spent two hours exploring the rocks around the gorge.
+
+At 1:30 PM, I took another shuttle further up the mountain to Smugglers' Notch State Park. The pass here is incredibly narrow, flanked by 1,000-foot limestone cliffs. I hiked a section of the Long Trail, logging 4.5 miles and significant elevation gain. My smartwatch clocked 1,200 active calories burned.
+
+I returned to Stowe via shuttle at 5:30 PM. For dinner at 6:30 PM, I went to Harrison's Restaurant and ordered a massive cut of prime rib, substituting the mashed potatoes for steamed broccoli ($55.00 + $12 tip = $67.00). To wind down, I took a slow evening walk along the paved Stowe Recreation Path, following the West Branch of the Little River in the dark. Returned to the Green Mountain Inn and crashed by 10:00 PM.
+
+Day 4: Lake Champlain and the Flight Home
+Date: Sunday
+Wake Up: 7:30 AM (Sleep: 9.5 hours)
+The final day of the trip. I slept in heavily to recover from yesterday's hiking. I grabbed a quick protein bar from my bag and a coffee ($4.00). At 8:30 AM, I ordered a rideshare from Stowe to Burlington. The 45-minute drive cost $65.00, but it dropped me right on the waterfront of Lake Champlain by 9:30 AM.
+
+Burlington is Vermont's largest city, and the vibe is incredibly active. At 10:00 AM, I rented a men's hybrid bike from a local shop for $50.00. I spent the next three hours riding the Burlington Bike Path. The trail is fully paved and runs directly along the edge of Lake Champlain. To the west, the massive peaks of the Adirondack Mountains in New York dominated the horizon across the water. I rode 12 miles total, burning off the last of my vacation energy.
+
+At 1:30 PM, I returned the bike and grabbed a quick lunch near the waterfront: grilled salmon over greens ($22.00). At 3:00 PM, I caught a quick $15.00 Uber to Burlington International Airport (BTV). I spent the two hours before my flight outlining the database schema for my hackathon based on all the metrics I collected. Boarded the plane at 5:00 PM to fly back to Phoenix, wrapping up a perfect transit-based tech detox.

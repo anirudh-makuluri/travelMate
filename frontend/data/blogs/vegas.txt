@@ -1,0 +1,48 @@
+Travel Diary: 5-Day Grand Canyon & Las Vegas Data-Driven Road Trip
+Day 1: Elevation Gains and the Edge of the World
+Date: Wednesday
+Wake Up: 5:15 AM (Sleep: 6.5 hours)
+The morning started in my Tempe apartment. My sleep tracker logged exactly 6 hours and 32 minutes, mostly deep sleep, which I needed for the drive ahead. Before hitting the road, I had to ensure my macros were aligned for a high-protein, low-carb day to keep my energy stable. Breakfast at 5:45 AM consisted of four whole eggs scrambled in 5g of Kerrygold butter, half an avocado, and a 30g whey isolate protein shake mixed with black coffee. Total cost: $0 (groceries). Total macros: 45g protein, 32g fat, 6g carbs.
+
+By 6:45 AM, I had my bags loaded into the trunk, triple-checked my hackathon GitHub repository on my laptop, and hit the road. I merged onto the Loop 202 West, catching the transition to I-17 North by 7:02 AM. The speed limit out of the Phoenix metro is 65 mph, but as I passed Anthem, it opened up to 75 mph. I set cruise control to 78 mph at exactly 2,400 RPMs to optimize fuel efficiency. The temperature outside was 72°F, but as I climbed past the 5,000-foot elevation marker near Sunset Point, it dropped to 61°F. At 9:15 AM, I pulled into a Chevron in Flagstaff (elevation 7,000 ft) to top off the tank. I put in 10.2 gallons of 87-octane gas at $3.45 per gallon ($35.19 total).
+
+I transitioned onto US-180 West at 9:45 AM. This is a two-lane road, so I dropped my speed to a strict 65 mph. The ponderosa pine forests gave way to scrub brush as I approached the South Rim. At 11:30 AM, I reached the toll booth. The National Park Service charges a flat $35.00 fee for a 7-day private vehicle pass. By 12:15 PM, I parked at the Maswik Lodge and headed to the food court. To stay low-carb, I ordered a double grilled chicken breast salad with oil and vinegar dressing ($18.50).
+
+At 1:30 PM, I started walking the Rim Trail. The sheer scale is difficult to process; the canyon plunges over 6,000 feet deep in some areas. I walked at a 3 mph pace from Mather Point to the Yavapai Geology Museum, logging 2.4 miles on my smartwatch. At 4:45 PM, I caught the free Blue Line park shuttle, transferring to the Red Line to reach Hopi Point by 5:20 PM for sunset. The temperature rapidly dropped to 48°F as the sun dipped below the canyon walls. By 7:30 PM, I drove south to Tusayan and checked into the Holiday Inn Express (Room 214, $215.00/night). Dinner was at Plaza Bonita at 8:15 PM: sizzling steak fajitas, double meat, absolutely no tortillas or rice ($28.00 + $6 tip = $34.00). I spent an hour reviewing API documentation for my RAG pipeline project before hitting the pillow at 10:45 PM.
+
+Day 2: Descending into the Geological Stack
+Date: Thursday
+Wake Up: 5:00 AM (Sleep: 6.25 hours)
+My alarm woke me before dawn. Today was dedicated entirely to the Grand Canyon. At 5:30 AM, I hit the hotel’s complimentary breakfast bar. I bypassed the carb-heavy bagels and loaded my plate with four turkey sausage links and a massive scoop of scrambled eggs (approx. 40g protein). I filled my 2-liter hydration bladder with water and added a sugar-free electrolyte packet to prevent cramping.
+
+By 6:15 AM, I was parked near the Bright Angel Trailhead. The morning air was crisp at 42°F. The descent began at 6:30 AM. The trail is aggressively steep, dropping through layers of Kaibab Limestone and Toroweap Formation. I kept a brisk pace of 2.5 mph going down, reaching the 1.5-mile resthouse at 7:15 AM. The elevation drop was roughly 1,120 feet. The hike back up was grueling; my heart rate peaked at 165 BPM. It took me double the time to ascend, emerging at the rim at 8:45 AM.
+
+At 10:30 AM, I drove my car along the 25-mile Desert View Drive, heading east. The speed limit here is 45 mph, and I stopped at Grandview Point and Lipan Point. At 12:30 PM, I arrived at the Desert View Watchtower. Lunch was packed in my cooler: two cans of tuna mixed with mayo packets and a side of almonds ($4.50 grocery cost). At 2:00 PM, I started the drive back toward Grand Canyon Village, spending the afternoon writing Python scripts in the lobby of the El Tovar hotel just to get a change of scenery. Dinner was a splurge at the El Tovar Dining Room at 6:30 PM. I ordered a 10oz prime rib with steamed asparagus instead of potatoes ($52.00 + $10 tip = $62.00). I returned to the Holiday Inn Express in Tusayan by 8:30 PM, exhausted, and fell asleep at 9:30 PM.
+
+Day 3: Concrete Marvels and Neon Lights
+Date: Friday
+Wake Up: 6:30 AM (Sleep: 9 hours)
+I woke up fully recovered. Breakfast was another round of hotel eggs and sausage. By 8:30 AM, my car was packed, and I checked out of the Holiday Inn Express. I merged onto US-64 South, hitting 65 mph, then merged onto I-40 West at Williams, Arizona. I pushed the cruise control to 75 mph. The drive through northern Arizona is desolate but beautiful.
+
+At 11:15 AM, I crossed into Nevada and pulled off at the Hoover Dam. I paid $10.00 to park in the concrete garage on the Nevada side. Walking across the Mike O'Callaghan–Pat Tillman Memorial Bridge was a surreal structural engineering experience. The wind was whipping at 20 mph, and looking down 900 feet at the dam made my stomach drop. I skipped the official inside tour to save time and money, heading back to the car by 12:45 PM.
+
+I hit the Las Vegas city limits via US-93 North by 1:30 PM. The traffic bottlenecked on I-15 North, dropping my speed to a crawling 15 mph. I finally pulled into the Planet Hollywood self-parking garage at 2:15 PM. Check-in wasn't until 3:00 PM, so I walked to the Miracle Mile Shops and grabbed a protein-heavy lettuce-wrapped chicken sandwich at Chick-fil-A ($9.45). By 3:30 PM, I got my digital key for Room 1412. The room rate was $135.00, but they hit me with a mandatory $45.00 daily resort fee (Total: $180.00). At 6:00 PM, I walked out onto the Strip. The sensory overload of LED billboards and street performers was immediate. I stood outside the Bellagio at 8:00 PM to watch the water fountains sync to music. Dinner was at 9:00 PM at Gordon Ramsay Burger. I requested the Hell's Kitchen Burger (mozzarella, roasted jalapeños, avocado) on a lettuce wrap instead of a brioche bun ($32.00 + $7 tip = $39.00). Walked 14,000 steps for the day. Bed at 11:30 PM.
+
+Day 4: Immersive Data and Downtown History
+Date: Saturday
+Wake Up: 8:00 AM (Sleep: 8.5 hours)
+Woke up feeling great. I walked over to The LINQ promenade at 9:15 AM for brunch at Hash House A Go Go. The portions here are absurd. I ordered the roasted chicken skillet but specifically asked the waiter to substitute the massive bed of crispy potatoes with sliced tomatoes and extra eggs ($35.00 + $8 tip = $43.00).
+
+At 11:30 AM, I walked over to The Venetian, analyzing the artificial sky ceiling in the canal shoppes. By 1:30 PM, I headed to the Sphere. I had pre-purchased a mid-tier ticket for Postcard from Earth for $119.00. The sheer data processing required to render 16K resolution video across a 160,000 square-foot LED canvas is staggering. The haptic feedback in the seats synced perfectly with the subwoofers. It was a masterclass in hardware/software integration.
+
+At 4:30 PM, I called an Uber to take me to downtown Las Vegas (Fremont Street). The ride took 20 minutes and cost $18.50. I walked into The Mob Museum at 5:00 PM, paying the $34.95 general admission fee. The forensic science exhibits were the most interesting part, detailing wiretapping and cryptographic analysis used by the FBI in the 1980s. By 7:30 PM, I walked out onto Fremont Street. The Viva Vision light canopy was flashing violently above. For dinner at 8:15 PM, I went to 8 East inside Circa. I ordered 12 oz of sizzling chicken skewers and a small side of brisket fried rice, allowing myself a slight carb cheat ($45.00 + $9 tip = $54.00). Uber back to the hotel at 10:30 PM ($22.00 due to surge pricing). Bed by midnight.
+
+Day 5: The Desert Sprint Home
+Date: Sunday
+Wake Up: 8:30 AM (Sleep: 8.5 hours)
+The final day. I packed my bags and officially checked out of Planet Hollywood via the mobile app at 9:45 AM. For a quick breakfast, I hit Earl of Sandwich on my way to the parking garage. I ordered the roast beef sandwich, tossing the top piece of bread to cut carbs ($12.00). By 10:15 AM, I was in the car, navigating out of the labyrinthian parking garage.
+
+I merged onto US-93 South at 10:45 AM. The Mojave Desert was already heating up, hitting 95°F by late morning. The drive is a straight, hypnotizing line through the scrubland. I set the cruise control to 75 mph and put on a three-hour podcast on vector databases to get my head back into hackathon mode. At 12:45 PM, I crossed the border back into Arizona and stopped in Kingman for gas. The tank took 11.5 gallons at $3.60 per gallon ($41.40).
+
+While in Kingman, I pulled into the In-N-Out Burger drive-thru at 1:15 PM. I ordered two Double-Doubles, "Protein Style" (wrapped in lettuce), with no spread, just mustard ($14.50). I ate in the parking lot while idling with the AC on full blast. At 1:45 PM, I got back on the road, merging onto US-60 East. The traffic started picking up as I approached Surprise and Peoria. I finally pulled into my apartment complex in Tempe at 4:30 PM. The trip odometer read exactly 812 miles. Total cost was calculated, and I was ready to parse this data into my JSON payload for the RAG pipeline.
+
