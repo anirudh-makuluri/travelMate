@@ -144,7 +144,7 @@ export const BlogPostPage = ({ params }: { params: { id: string } }) => {
 
             <div className="flex items-center gap-2 px-3 py-1.5 bg-teal/10 rounded-full">
               <span className="text-xs font-medium text-teal">
-                ✨ Written with TripMind
+                ✨ Written with TravelMate
               </span>
             </div>
           </div>
@@ -219,7 +219,7 @@ export const BlogPostPage = ({ params }: { params: { id: string } }) => {
             Feeling inspired?
           </h3>
           <p className="text-text-secondary mb-8 max-w-xl mx-auto">
-            TripMind can recreate this Tokyo itinerary or tailor a new journey
+            TravelMate can recreate this Tokyo itinerary or tailor a new journey
             just for you. Let&apos;s get planning.
           </p>
           <Link
@@ -236,7 +236,7 @@ export const BlogPostPage = ({ params }: { params: { id: string } }) => {
       <div className="bg-text-primary text-white py-12 mt-16">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-sm text-gray-300">
-            © {new Date().getFullYear()} TripMind. Your memories, amplified.
+            © {new Date().getFullYear()} TravelMate. Your memories, amplified.
           </p>
         </div>
       </div>

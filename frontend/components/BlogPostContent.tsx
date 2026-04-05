@@ -222,7 +222,7 @@ export const BlogPostContent = ({ blog }: BlogPostContentProps) => {
             Inspired to explore?
           </h3>
           <p className="text-text-secondary mb-8 max-w-xl mx-auto">
-            Every journey creates memories. Start planning your own adventure with TripMind and create experiences worth writing about.
+            Every journey creates memories. Start planning your own adventure with TravelMate and create experiences worth writing about.
           </p>
           <Link
             href="/"
@@ -238,7 +238,7 @@ export const BlogPostContent = ({ blog }: BlogPostContentProps) => {
       <div className="bg-text-primary text-white py-12 mt-16">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <p className="text-sm text-gray-300">
-            © {new Date().getFullYear()} TripMind. Your memories, amplified.
+            © {new Date().getFullYear()} TravelMate. Your memories, amplified.
           </p>
         </div>
       </div>

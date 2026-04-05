@@ -106,7 +106,7 @@ export const RightPane = ({ blog, onScrollDayChange }: RightPaneProps) => {
           </div>
 
           <div className="flex items-center gap-2 px-3 py-1.5 bg-teal/10 rounded-full">
-            <span className="text-xs font-medium text-teal">✨ Written with TripMind</span>
+            <span className="text-xs font-medium text-teal">✨ Written with TravelMate</span>
           </div>
         </div>
 
@@ -198,7 +198,7 @@ export const RightPane = ({ blog, onScrollDayChange }: RightPaneProps) => {
         <div className="mt-12 pt-12 border-t border-gray-100 bg-gradient-to-br from-teal/5 to-ocean/5 rounded-xl p-12 text-center">
           <h3 className="text-2xl font-bold text-text-primary mb-4">Feeling inspired?</h3>
           <p className="text-text-secondary mb-8 max-w-xl mx-auto">
-            TripMind can recreate this {blog.destination} itinerary or tailor a new journey just
+            TravelMate can recreate this {blog.destination} itinerary or tailor a new journey just
             for you. Let&apos;s get planning.
           </p>
           <Link
@@ -215,7 +215,7 @@ export const RightPane = ({ blog, onScrollDayChange }: RightPaneProps) => {
       <div className="bg-text-primary text-white py-12 mt-16">
         <div className="max-w-2xl mx-auto px-6 text-center">
           <p className="text-sm text-gray-300">
-            © {new Date().getFullYear()} TripMind. Your memories, amplified.
+            © {new Date().getFullYear()} TravelMate. Your memories, amplified.
           </p>
         </div>
       </div>

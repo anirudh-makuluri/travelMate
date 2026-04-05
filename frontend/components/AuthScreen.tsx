@@ -11,7 +11,7 @@ export const AuthScreen = () => {
             <div className="relative">
               <div className="mb-8 inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium">
                 <CompassIcon size={18} className="text-white" />
-                <span>TripMind</span>
+                <span>TravelMate</span>
               </div>
 
               <div className="max-w-xl space-y-5">
@@ -22,7 +22,7 @@ export const AuthScreen = () => {
                   Plan better trips with memory, taste, and live trip context in one workspace.
                 </h1>
                 <p className="max-w-lg text-base leading-7 text-white/82 sm:text-lg">
-                  TripMind turns your past travel patterns, destination preferences, and in-trip
+                  TravelMate turns your past travel patterns, destination preferences, and in-trip
                   updates into a planning experience that feels personal from the very first message.
                 </p>
               </div>

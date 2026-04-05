@@ -713,7 +713,7 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
             <CompassIcon size={18} className="text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-text-primary">TripMind</h1>
+            <h1 className="text-lg font-bold text-text-primary">TravelMate</h1>
             {activeDestinationLabel && (
               <p className="mt-0.5 text-xs font-medium text-teal">{activeDestinationLabel}</p>
             )}
@@ -729,7 +729,7 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
               <p className="truncate text-xs font-semibold text-text-primary">
                 {userName ?? 'Traveler'}
               </p>
-              <p className="truncate text-xs text-text-muted">{userEmail ?? 'traveler@tripmind.app'}</p>
+              <p className="truncate text-xs text-text-muted">{userEmail ?? 'traveler@travelmate.app'}</p>
             </div>
           </div>
           <a
