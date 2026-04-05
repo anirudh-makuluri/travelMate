@@ -128,6 +128,24 @@ export interface TripPlanResponse {
   }
 }
 
+export interface CalendarExportEvent {
+  id: string
+  title: string
+  start: Date | null
+  end: Date | null
+  location: string
+  details: string
+  googleCalendarUrl: string | null
+  isExportable: boolean
+}
+
+export interface CalendarExportResult {
+  exportableEvents: CalendarExportEvent[]
+  skippedEvents: CalendarExportEvent[]
+  blockedEvents: CalendarExportEvent[]
+  openedCount: number
+}
+
 const PLANNER_PROXY_PATH = '/api/planner/plan'
 
 const DAY_ACTIVITY_TIMES = ['09:00', '11:30', '14:30', '17:30', '20:00']
@@ -203,6 +221,64 @@ const addDays = (isoDate: string, daysToAdd: number): string => {
   const date = new Date(isoDate)
   date.setDate(date.getDate() + daysToAdd)
   return date.toISOString()
+}
+
+const parseActivityDateTime = (date: string, time: string): Date | null => {
+  const match = time.trim().match(/^(\d{1,2}):(\d{2})$/)
+  if (!match) {
+    return null
+  }
+
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  if (Number.isNaN(hours) || Number.isNaN(minutes) || hours > 23 || minutes > 59) {
+    return null
+  }
+
+  const activityDate = new Date(date)
+  if (Number.isNaN(activityDate.getTime())) {
+    return null
+  }
+
+  activityDate.setHours(hours, minutes, 0, 0)
+  return activityDate
+}
+
+const addMinutes = (date: Date, minutesToAdd: number): Date => {
+  const updated = new Date(date)
+  updated.setMinutes(updated.getMinutes() + minutesToAdd)
+  return updated
+}
+
+const formatGoogleCalendarDate = (date: Date): string => {
+  const pad = (value: number) => value.toString().padStart(2, '0')
+  return [
+    date.getFullYear(),
+    pad(date.getMonth() + 1),
+    pad(date.getDate()),
+    'T',
+    pad(date.getHours()),
+    pad(date.getMinutes()),
+    '00',
+  ].join('')
+}
+
+const buildGoogleCalendarUrl = (event: {
+  title: string
+  start: Date
+  end: Date
+  location: string
+  details: string
+}) => {
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: event.title,
+    dates: `${formatGoogleCalendarDate(event.start)}/${formatGoogleCalendarDate(event.end)}`,
+    details: event.details,
+    location: event.location,
+  })
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`
 }
 
 export const mapTripPlanToItinerary = (plan: TripPlanResponse): Itinerary | null => {
@@ -344,6 +420,63 @@ export const mapPlanningStateToPreferences = (planningState?: PlanningState): Pr
   }
 
   return preferences
+}
+
+export const mapItineraryToCalendarEvents = (itinerary: Itinerary): CalendarExportEvent[] => {
+  return itinerary.days.flatMap((day) =>
+    day.activities.map((activity, index) => {
+      const start = parseActivityDateTime(day.date, activity.time)
+      const end = start ? addMinutes(start, 90) : null
+      const details = [
+        `Trip: ${itinerary.destination}, ${itinerary.country}`,
+        `Day ${day.dayNumber}`,
+        activity.description || null,
+      ]
+        .filter(Boolean)
+        .join('\n\n')
+
+      return {
+        id: `${day.dayNumber}-${index}-${activity.name}`,
+        title: activity.name,
+        start,
+        end,
+        location: activity.location,
+        details,
+        googleCalendarUrl: start && end ? buildGoogleCalendarUrl({
+          title: activity.name,
+          start,
+          end,
+          location: activity.location,
+          details,
+        }) : null,
+        isExportable: Boolean(start && end),
+      }
+    })
+  )
+}
+
+export const launchGoogleCalendarExport = (itinerary: Itinerary): CalendarExportResult => {
+  const events = mapItineraryToCalendarEvents(itinerary)
+  const exportableEvents = events.filter((event) => event.isExportable && event.googleCalendarUrl)
+  const skippedEvents = events.filter((event) => !event.isExportable)
+  const blockedEvents: CalendarExportEvent[] = []
+  let openedCount = 0
+
+  for (const event of exportableEvents) {
+    const openedWindow = window.open(event.googleCalendarUrl!, '_blank', 'noopener,noreferrer')
+    if (openedWindow) {
+      openedCount += 1
+      continue
+    }
+    blockedEvents.push(event)
+  }
+
+  return {
+    exportableEvents,
+    skippedEvents,
+    blockedEvents,
+    openedCount,
+  }
 }
 
 const normalizeMarkdownForChat = (text: string): string =>

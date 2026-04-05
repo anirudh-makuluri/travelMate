@@ -8,6 +8,7 @@ import { CompassIcon, LogOutIcon, MicIcon, SendIcon, UserIcon } from './Icons'
 import { ItineraryCard } from './ItineraryCard'
 import { cn } from '@/lib/utils'
 import {
+  type CalendarExportResult,
   formatTripPlanForChat,
   getFollowUpOptions,
   inferTransportPreference,
@@ -275,6 +276,35 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
     setRecording(userId, !isRecording)
   }
 
+  const handleCalendarExportStarted = (result: CalendarExportResult) => {
+    const totalEvents = result.exportableEvents.length
+    const messageParts = [
+      totalEvents > 0
+        ? `I started the Google Calendar handoff for ${totalEvents} itinerary event${totalEvents === 1 ? '' : 's'}.`
+        : 'I could not find any scheduled itinerary events ready for Google Calendar yet.',
+    ]
+
+    if (result.blockedEvents.length > 0) {
+      messageParts.push(
+        `${result.blockedEvents.length} event${result.blockedEvents.length === 1 ? '' : 's'} may have been blocked by your browser, so I left manual Google Calendar links in the itinerary card.`
+      )
+    }
+
+    if (result.skippedEvents.length > 0) {
+      messageParts.push(
+        `${result.skippedEvents.length} item${result.skippedEvents.length === 1 ? '' : 's'} were skipped because they do not have a usable start time yet.`
+      )
+    }
+
+    messageParts.push('Save the opened events in Google Calendar when you are ready.')
+
+    addMessage(userId, {
+      role: 'agent',
+      content: messageParts.join('\n\n'),
+      timestamp: new Date(),
+    })
+  }
+
   return (
     <div className="fixed left-[248px] right-[280px] top-0 h-screen bg-gradient-to-b from-cream to-warm-white flex flex-col overflow-hidden">
       <div className="flex items-center justify-between border-b border-white/60 bg-white/55 px-6 py-4 backdrop-blur-md">
@@ -371,7 +401,10 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
 
                   {itinerary && message.role === 'agent' && itineraryInlineAfterMessageId === message.id && (
                     <div className="mt-4 max-w-2xl rounded-[30px] border border-white/85 bg-white/58 p-2 shadow-[0_18px_34px_rgba(15,23,42,0.1)] backdrop-blur-sm">
-                      <ItineraryCard itinerary={itinerary} />
+                      <ItineraryCard
+                        itinerary={itinerary}
+                        onCalendarExportStarted={handleCalendarExportStarted}
+                      />
                     </div>
                   )}
                 </div>

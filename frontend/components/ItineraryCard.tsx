@@ -12,12 +12,18 @@ import {
 } from './Icons'
 import { cn, formatDate } from '@/lib/utils'
 import { Itinerary } from '@/store/appStore'
+import {
+  type CalendarExportResult,
+  launchGoogleCalendarExport,
+  mapItineraryToCalendarEvents,
+} from '@/lib/plannerApi'
 
 interface ItineraryCardProps {
   itinerary: Itinerary
+  onCalendarExportStarted?: (result: CalendarExportResult) => void
 }
 
-export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
+export const ItineraryCard = ({ itinerary, onCalendarExportStarted }: ItineraryCardProps) => {
   const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set([1]))
   const [visibleSections, setVisibleSections] = useState({
     hero: false,
@@ -25,6 +31,8 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
     days: false,
     cta: false,
   })
+  const [isConfirmingCalendarExport, setIsConfirmingCalendarExport] = useState(false)
+  const [calendarExportResult, setCalendarExportResult] = useState<CalendarExportResult | null>(null)
 
   useEffect(() => {
     setExpandedDays(new Set([1]))
@@ -34,6 +42,8 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
       days: false,
       cta: false,
     })
+    setIsConfirmingCalendarExport(false)
+    setCalendarExportResult(null)
 
     const timers = [
       setTimeout(() => setVisibleSections((prev) => ({ ...prev, hero: true })), 60),
@@ -62,6 +72,16 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
   const hasFlightPrice = itinerary.flights.price !== null && itinerary.flights.price !== undefined
   const hasHotelRating = itinerary.hotel.rating !== null && itinerary.hotel.rating !== undefined
   const hasHotelPrice = itinerary.hotel.price !== null && itinerary.hotel.price !== undefined
+  const calendarEvents = mapItineraryToCalendarEvents(itinerary)
+  const exportableEventCount = calendarEvents.filter((event) => event.isExportable).length
+  const skippedEventCount = calendarEvents.length - exportableEventCount
+
+  const handleCalendarExport = () => {
+    const result = launchGoogleCalendarExport(itinerary)
+    setCalendarExportResult(result)
+    setIsConfirmingCalendarExport(false)
+    onCalendarExportStarted?.(result)
+  }
 
   return (
     <div className="glass-panel mx-auto max-w-2xl overflow-hidden rounded-[28px] border border-white/70 shadow-[0_24px_48px_rgba(15,23,42,0.1)]">
@@ -225,9 +245,100 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
           visibleSections.cta && 'is-visible'
         )}
       >
-        <button className="w-full rounded-2xl bg-teal px-4 py-3 text-sm font-medium text-white shadow-[0_14px_24px_rgba(13,115,119,0.18)] transition-colors hover:bg-teal-light">
-          Save This Itinerary
-        </button>
+        <div className="space-y-3">
+          {isConfirmingCalendarExport ? (
+            <div className="rounded-2xl border border-teal/20 bg-white/90 p-4 shadow-sm">
+              <p className="text-sm font-semibold text-text-primary">
+                Looks good? Add all itinerary events to Google Calendar.
+              </p>
+              <p className="mt-2 text-xs leading-5 text-text-muted">
+                {exportableEventCount > 0
+                  ? `We will open ${exportableEventCount} prefilled Google Calendar event${exportableEventCount === 1 ? '' : 's'} in new tabs.`
+                  : 'No scheduled activities are ready for calendar export yet.'}
+                {skippedEventCount > 0
+                  ? ` ${skippedEventCount} item${skippedEventCount === 1 ? '' : 's'} will be skipped because they do not have a usable start time.`
+                  : ''}
+              </p>
+              <div className="mt-4 flex gap-3">
+                <button
+                  onClick={handleCalendarExport}
+                  disabled={exportableEventCount === 0}
+                  className="flex-1 rounded-2xl bg-teal px-4 py-3 text-sm font-medium text-white shadow-[0_14px_24px_rgba(13,115,119,0.18)] transition-colors hover:bg-teal-light disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Add to Google Calendar
+                </button>
+                <button
+                  onClick={() => setIsConfirmingCalendarExport(false)}
+                  className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-text-secondary transition-colors hover:border-teal hover:text-teal"
+                >
+                  Keep editing
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setIsConfirmingCalendarExport(true)}
+              className="w-full rounded-2xl bg-teal px-4 py-3 text-sm font-medium text-white shadow-[0_14px_24px_rgba(13,115,119,0.18)] transition-colors hover:bg-teal-light"
+            >
+              Add to Google Calendar
+            </button>
+          )}
+
+          {calendarExportResult && (
+            <div className="rounded-2xl border border-white/80 bg-white/88 p-4 shadow-sm">
+              <p className="text-sm font-semibold text-text-primary">
+                Calendar handoff started
+              </p>
+              <p className="mt-2 text-xs leading-5 text-text-muted">
+                {calendarExportResult.openedCount > 0
+                  ? `${calendarExportResult.openedCount} event${calendarExportResult.openedCount === 1 ? '' : 's'} opened in Google Calendar.`
+                  : 'No calendar tabs could be opened automatically.'}
+                {calendarExportResult.blockedEvents.length > 0
+                  ? ` ${calendarExportResult.blockedEvents.length} event${calendarExportResult.blockedEvents.length === 1 ? '' : 's'} need to be opened manually below.`
+                  : ''}
+                {calendarExportResult.skippedEvents.length > 0
+                  ? ` ${calendarExportResult.skippedEvents.length} unscheduled item${calendarExportResult.skippedEvents.length === 1 ? ' was' : 's were'} skipped.`
+                  : ''}
+              </p>
+
+              {calendarExportResult.blockedEvents.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                    Open manually
+                  </p>
+                  {calendarExportResult.blockedEvents.map((event) => (
+                    <a
+                      key={event.id}
+                      href={event.googleCalendarUrl ?? '#'}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-text-primary transition-colors hover:border-teal hover:text-teal"
+                    >
+                      <span className="truncate pr-3">{event.title}</span>
+                      <span className="text-xs font-medium text-text-muted">Open</span>
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              {calendarExportResult.skippedEvents.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+                    Not added
+                  </p>
+                  {calendarExportResult.skippedEvents.map((event) => (
+                    <div
+                      key={event.id}
+                      className="rounded-xl border border-gray-100 bg-[#f8fbfb] px-3 py-2 text-sm text-text-secondary"
+                    >
+                      {event.title}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
