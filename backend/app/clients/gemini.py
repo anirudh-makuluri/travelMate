@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from typing import Any
 
-from app.clients.base import BaseGoogleClient
+from app.clients.base import BaseGoogleClient, GoogleAPIError
 from app.models.planning import (
     BudgetLevel,
     BudgetPreference,
@@ -34,6 +35,8 @@ When the request is too vague to materialize an itinerary, put required missing 
 (for example: destination, duration, budget, party_size) instead of silently defaulting.
 Prefer asking for follow-up information through unknowns rather than guessing.
 """.strip()
+
+logger = logging.getLogger(__name__)
 
 
 class GeminiClient(BaseGoogleClient):
@@ -110,14 +113,28 @@ Defaults:
                 "responseMimeType": "application/json",
             },
         }
-        data = await self.post_json(
-            url,
-            json_payload=payload,
-            params={"key": self.require_gemini_api_key()},
-        )
-        raw_text = self._extract_text(data)
-        parsed = self._normalize_planning_payload(self._load_json(raw_text))
-        planning_state = PlanningState.model_validate(parsed)
+        try:
+            data = await self.post_json(
+                url,
+                json_payload=payload,
+                params={"key": self.require_gemini_api_key()},
+            )
+            raw_text = self._extract_text(data)
+            parsed = self._normalize_planning_payload(self._load_json(raw_text))
+            planning_state = PlanningState.model_validate(parsed)
+        except (ValueError, GoogleAPIError) as exc:
+            logger.warning(
+                "Falling back to heuristic planning state because Gemini parsing failed: %s",
+                exc,
+            )
+            return self._heuristic_planning_state(
+                prompt=prompt,
+                language_code=language_code,
+                region_code=region_code,
+                currency_code=currency_code,
+                default_days=default_days,
+                default_stops_per_day=default_stops_per_day,
+            )
 
         if not planning_state.transport_modes:
             planning_state.transport_modes = [TransportMode.WALK, TransportMode.TRANSIT]
