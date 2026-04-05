@@ -153,15 +153,18 @@ File: [`app/workflows/planner_graph.py`](./app/workflows/planner_graph.py)
 Data processing stages:
 
 1. Query generation:
-   - `SearchQueryBuilder.build_queries(planning_state)`
+   - `SearchQueryBuilder.build_queries(planning_state, origin, destination)`
+   - includes route-aware queries for "along the way / on the way / en route" prompts
 2. Candidate collection:
    - `_collect_candidates()` -> `PlacesClient.search_text(...)` per query
    - dedupe by `place_id`
 3. Candidate scoring + shortlist:
    - `ItineraryOptimizer.shortlist_candidates(...)`
+   - applies exclusion constraints (for example "exclude X")
 4. Route evaluation by transport mode:
    - `RoutesClient.compute_route_maps_for_modes(...)`
    - evaluates all requested/effective modes
+   - computes an origin->destination route overview when both endpoints can be resolved
 5. Route option selection:
    - `_select_route_map()` + `_choose_route_option()`
    - selection strategy depends on `transport_preference`
@@ -171,6 +174,15 @@ Data processing stages:
    - `ItineraryOptimizer.estimate_budget(...)`
 8. Explanation generation **(LLM call #2)**:
    - `GeminiClient.explain_itinerary(...)`
+   - final prompt includes:
+     - route overview from Routes API
+     - place data from Places API
+     - structured itinerary summary with travel legs
+   - asks Gemini to return sections:
+     - `How To Get There`
+     - `Places Along The Way`
+     - `Suggested Itinerary`
+     - `Notes And Tradeoffs`
 
 Special branch:
 

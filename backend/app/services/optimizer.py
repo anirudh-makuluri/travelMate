@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import re
 
 from app.core.config import Settings
 from app.models.planning import (
@@ -33,6 +34,7 @@ class ItineraryOptimizer:
         planning_state: PlanningState,
         candidates: list[CandidatePlace],
     ) -> list[CandidatePlace]:
+        candidates = self._apply_exclusion_constraints(planning_state, candidates)
         scored = []
         for candidate in candidates:
             score = self._score_candidate(planning_state, candidate)
@@ -193,14 +195,102 @@ class ItineraryOptimizer:
             )
         )
         score = 0.0
-        for preference in planning_state.soft_preferences:
-            tokens = preference.key.replace("_", " ").split()
+        weighted_token_groups = self._weighted_preference_tokens(planning_state)
+        for tokens, weight in weighted_token_groups:
             if any(token in searchable for token in tokens):
-                score += preference.weight * 25
+                score += weight * 45
 
         if not planning_state.soft_preferences:
             score += 10
         return score
+
+    def _weighted_preference_tokens(
+        self,
+        planning_state: PlanningState,
+    ) -> list[tuple[list[str], float]]:
+        weighted: list[tuple[list[str], float]] = []
+        for preference in planning_state.soft_preferences:
+            key_tokens = preference.key.replace("_", " ").lower().split()
+            description_tokens = re.findall(
+                r"[a-zA-Z][a-zA-Z\-]{2,}",
+                preference.description.lower(),
+            )
+            tokens = [
+                token
+                for token in [*key_tokens, *description_tokens]
+                if token not in {"quality", "style", "preference", "experience"}
+            ]
+            if tokens:
+                weighted.append((tokens, preference.weight))
+
+        for constraint in planning_state.hard_constraints:
+            if constraint.value is None:
+                continue
+            description = constraint.description.lower()
+            value = str(constraint.value).lower()
+            if any(token in description for token in ["exclude", "avoid"]):
+                continue
+            tokens = re.findall(r"[a-zA-Z][a-zA-Z\-]{2,}", f"{description} {value}")
+            if tokens:
+                weighted.append((tokens, 0.65))
+
+        return weighted
+
+    def _apply_exclusion_constraints(
+        self,
+        planning_state: PlanningState,
+        candidates: list[CandidatePlace],
+    ) -> list[CandidatePlace]:
+        exclusion_phrases: list[str] = []
+
+        for constraint in planning_state.hard_constraints:
+            key = constraint.key.lower()
+            description = constraint.description.lower()
+            value = str(constraint.value).strip().lower() if constraint.value is not None else ""
+            is_exclusion = (
+                "exclude" in key
+                or "exclude" in description
+                or "avoid" in key
+                or "avoid" in description
+            )
+            if not is_exclusion:
+                continue
+            if value in {"false", "0", "no"}:
+                continue
+            inferred_from_key = key.replace("exclude_", "").replace("avoid_", "").strip("_")
+            if inferred_from_key:
+                exclusion_phrases.append(inferred_from_key.replace("_", " "))
+            if value not in {"true", "1", "yes"}:
+                exclusion_phrases.append(value)
+            cleaned_description = re.sub(
+                r"\b(do not include|don't include|exclude|avoid)\b",
+                "",
+                description,
+            ).strip(" .,-")
+            if cleaned_description:
+                exclusion_phrases.append(cleaned_description)
+
+        normalized_phrases = []
+        for phrase in exclusion_phrases:
+            normalized = re.sub(r"\s+", " ", phrase.strip().lower())
+            if len(normalized) < 3:
+                continue
+            if normalized in {"true", "false", "yes", "no"}:
+                continue
+            if normalized not in normalized_phrases:
+                normalized_phrases.append(normalized)
+
+        if not normalized_phrases:
+            return candidates
+
+        filtered: list[CandidatePlace] = []
+        for candidate in candidates:
+            name = candidate.name.lower()
+            if any(phrase in name for phrase in normalized_phrases):
+                continue
+            filtered.append(candidate)
+
+        return filtered
 
     def _price_fit(self, planning_state: PlanningState, candidate: CandidatePlace) -> float:
         if candidate.price_level is None or planning_state.budget.level is None:

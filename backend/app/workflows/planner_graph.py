@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any, TypedDict
 from uuid import uuid4
 
@@ -37,8 +38,10 @@ class PlannerGraphState(TypedDict, total=False):
     completeness: CompletenessAssessment
     feasibility: FeasibilityAssessment
     search_queries: list[str]
+    origin: str | None
     candidates: list[CandidatePlace]
     itinerary_summary: list[dict[str, Any]]
+    route_overview: dict[str, Any] | None
     itinerary: list[Any]
     budget: BudgetEstimate
     explanation: str
@@ -158,10 +161,18 @@ class PlannerWorkflow:
                 "Planner considered recent conversation context from session memory."
             )
 
+        origin = self._extract_origin(
+            prompt=request.prompt,
+            context_block=context_block,
+        )
+        if origin:
+            planning_state.assumptions.append(f"Origin inferred as {origin}.")
+
         self.memory_store.set_last_planning_state(session_id, planning_state)
         return {
             "planning_state": planning_state,
             "context_block": context_block,
+            "origin": origin,
         }
 
     async def _evaluate_completeness(self, state: PlannerGraphState) -> PlannerGraphState:
@@ -189,8 +200,14 @@ class PlannerWorkflow:
     async def _build_plan(self, state: PlannerGraphState) -> PlannerGraphState:
         planning_state = state["planning_state"]
         request = state["request"]
+        origin = state.get("origin")
+        destination = planning_state.destination.value
 
-        search_queries = self.query_builder.build_queries(planning_state)
+        search_queries = self.query_builder.build_queries(
+            planning_state,
+            origin=origin,
+            destination=destination,
+        )
         per_query_limit = max(
             4,
             self.settings.planner_candidate_limit // max(1, len(search_queries)),
@@ -249,6 +266,12 @@ class PlannerWorkflow:
             planning_state=planning_state,
             route_maps_by_mode=route_maps_by_mode,
         )
+        route_overview = await self._build_origin_destination_route_overview(
+            planning_state=planning_state,
+            origin=origin,
+            destination=destination,
+            evaluated_modes=evaluated_modes,
+        )
         selected_modes = self._selected_modes(route_map)
         primary_mode = selected_modes[0] if selected_modes else evaluated_modes[0]
 
@@ -266,9 +289,23 @@ class PlannerWorkflow:
                 "stops": [
                     {
                         "name": stop.place.name,
+                        "address": stop.place.address,
+                        "maps_uri": stop.place.google_maps_uri,
                         "type": stop.place.primary_type,
+                        "rating": stop.place.rating,
                         "travel_minutes": (
                             stop.travel_from_previous.duration_minutes
+                            if stop.travel_from_previous
+                            else None
+                        ),
+                        "travel": (
+                            {
+                                "mode": stop.travel_from_previous.mode.value,
+                                "duration_minutes": stop.travel_from_previous.duration_minutes,
+                                "distance_meters": stop.travel_from_previous.distance_meters,
+                                "cost_estimate": stop.travel_from_previous.cost_estimate,
+                                "note": stop.travel_from_previous.note,
+                            }
                             if stop.travel_from_previous
                             else None
                         ),
@@ -279,10 +316,22 @@ class PlannerWorkflow:
             }
             for day in itinerary
         ]
+        candidate_snapshot = [
+            {
+                "name": place.name,
+                "address": place.address,
+                "type": place.primary_type,
+                "rating": place.rating,
+                "maps_uri": place.google_maps_uri,
+            }
+            for place in shortlist[:8]
+        ]
         explanation = await self.gemini_client.explain_itinerary(
             raw_request=request.prompt,
             planning_state=planning_state,
             itinerary_summary=itinerary_summary,
+            route_overview=route_overview,
+            candidate_snapshot=candidate_snapshot,
         )
 
         warnings: list[str] = []
@@ -312,6 +361,7 @@ class PlannerWorkflow:
             "explanation": explanation,
             "warnings": warnings,
             "metadata": metadata,
+            "route_overview": route_overview,
         }
 
     async def _finalize_response(self, state: PlannerGraphState) -> PlannerGraphState:
@@ -493,6 +543,93 @@ class PlannerWorkflow:
                 deduplicated.setdefault(place.place_id, place)
 
         return list(deduplicated.values())
+
+    async def _build_origin_destination_route_overview(
+        self,
+        *,
+        planning_state: PlanningState,
+        origin: str | None,
+        destination: str | None,
+        evaluated_modes: list[TransportMode],
+    ) -> dict[str, Any] | None:
+        if not origin or not destination:
+            return None
+        destination_normalized = destination.strip().lower()
+        if destination_normalized in {"", "unknown destination"}:
+            return None
+
+        origin_place = await self._resolve_location_point(
+            text_query=origin,
+            planning_state=planning_state,
+        )
+        destination_place = await self._resolve_location_point(
+            text_query=destination,
+            planning_state=planning_state,
+        )
+        if origin_place is None or destination_place is None:
+            return None
+
+        options: list[TravelStep] = []
+        for mode in evaluated_modes:
+            route = await self.routes_client.compute_route(
+                origin=origin_place,
+                destination=destination_place,
+                mode=mode,
+                language_code=planning_state.language_code,
+            )
+            options.append(route)
+        if not options:
+            return None
+
+        selected = self._choose_route_option(
+            options=options,
+            transport_preference=planning_state.transport_preference,
+        )
+        return {
+            "origin": origin_place.name,
+            "destination": destination_place.name,
+            "mode": selected.mode.value,
+            "duration_minutes": selected.duration_minutes,
+            "distance_meters": selected.distance_meters,
+            "cost_estimate": selected.cost_estimate,
+            "note": selected.note,
+        }
+
+    async def _resolve_location_point(
+        self,
+        *,
+        text_query: str,
+        planning_state: PlanningState,
+    ) -> CandidatePlace | None:
+        try:
+            places = await self.places_client.search_text(
+                text_query=text_query,
+                language_code=planning_state.language_code,
+                region_code=planning_state.region_code,
+                max_results=1,
+            )
+        except Exception:
+            return None
+        if not places:
+            return None
+        return places[0]
+
+    def _extract_origin(
+        self,
+        *,
+        prompt: str,
+        context_block: str,
+    ) -> str | None:
+        search_text = f"{prompt}\n{context_block}".strip()
+        match = re.search(
+            r"\bfrom\s+([A-Za-z][A-Za-z\s\-',]{1,80}?)(?:\s+\bto\b|[,.!?]|$)",
+            search_text,
+            flags=re.IGNORECASE,
+        )
+        if not match:
+            return None
+        origin = re.sub(r"\s+", " ", match.group(1)).strip(" ,.-")
+        return origin or None
 
     def _resolve_transport_modes(
         self,

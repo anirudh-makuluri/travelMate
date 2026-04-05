@@ -140,13 +140,15 @@ Defaults:
         raw_request: str,
         planning_state: PlanningState,
         itinerary_summary: list[dict[str, Any]],
+        route_overview: dict[str, Any] | None = None,
+        candidate_snapshot: list[dict[str, Any]] | None = None,
     ) -> str:
         if not self.settings.planner_enable_google_calls or not self.settings.gemini_api_key_value:
             return self._fallback_explanation(planning_state, itinerary_summary)
 
         explanation_prompt = f"""
-You are a travel planner assistant. Explain the itinerary in the user's preferred language.
-Keep the answer helpful and concise.
+You are a travel planner assistant. Create a final user-facing plan in the user's preferred language.
+Your response must be grounded only in the provided route and place data.
 
 User request:
 {raw_request}
@@ -157,11 +159,24 @@ Planning state:
 Itinerary summary:
 {json.dumps(itinerary_summary, indent=2)}
 
+Origin-to-destination route overview:
+{json.dumps(route_overview, indent=2)}
+
+Candidate places from Maps:
+{json.dumps(candidate_snapshot or [], indent=2)}
+
 Requirements:
-- Explain why the stop mix fits the request
-- Call out any assumptions or tradeoffs
-- Mention pacing and transport logic
-- Do not invent facts outside the planning state or itinerary summary
+- Use the exact section headers below:
+  1) How To Get There
+  2) Places Along The Way
+  3) Suggested Itinerary
+  4) Notes And Tradeoffs
+- "How To Get There" must use route_overview if present (mode, duration, and any notable note).
+- "Places Along The Way" must list specific place names from itinerary/candidate data; include brief why-visit.
+- Mention at least one concrete food stop when user intent includes food keywords.
+- Respect any exclusion constraints from planning_state.hard_constraints.
+- Do not invent facts, routes, venues, or prices outside the provided data.
+- Keep it concise and practical.
 """.strip()
 
         url = (
