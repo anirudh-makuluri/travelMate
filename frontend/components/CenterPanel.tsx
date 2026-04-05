@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '@/store/appStore'
 import type { Message } from '@/store/appStore'
-import { useAuthStore } from '@/store/authStore'
 import { CompassIcon, LogOutIcon, MicIcon, SendIcon, UserIcon } from './Icons'
 import { ItineraryCard } from './ItineraryCard'
 import { cn } from '@/lib/utils'
@@ -18,7 +17,12 @@ type FlowStep =
   | 'in-trip'
   | 'completed'
 
-export const CenterPanel = () => {
+interface CenterPanelProps {
+  userEmail?: string
+  userName?: string
+}
+
+export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [flowStep, setFlowStep] = useState<FlowStep>('awaiting-destination')
@@ -38,9 +42,6 @@ export const CenterPanel = () => {
   const setItinerary = useAppStore((state) => state.setItinerary)
   const isRecording = useAppStore((state) => state.isRecording)
   const setRecording = useAppStore((state) => state.setRecording)
-  const resetApp = useAppStore((state) => state.resetApp)
-  const user = useAuthStore((state) => state.user)
-  const signOut = useAuthStore((state) => state.signOut)
 
   const sleep = (ms: number) =>
     new Promise((resolve) => {
@@ -675,11 +676,6 @@ export const CenterPanel = () => {
     setRecording(!isRecording)
   }
 
-  const handleSignOut = () => {
-    resetApp()
-    signOut()
-  }
-
   return (
     <div className="fixed left-[220px] right-[280px] top-0 h-screen bg-gradient-to-b from-cream to-warm-white flex flex-col overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 bg-white/50 backdrop-blur-sm flex items-center justify-between">
@@ -697,18 +693,18 @@ export const CenterPanel = () => {
             </div>
             <div className="min-w-0">
               <p className="truncate text-xs font-semibold text-text-primary">
-                {user?.name ?? 'Traveler'}
+                {userName ?? 'Traveler'}
               </p>
-              <p className="truncate text-xs text-text-muted">{user?.email ?? 'demo@tripmind.app'}</p>
+              <p className="truncate text-xs text-text-muted">{userEmail ?? 'traveler@tripmind.app'}</p>
             </div>
           </div>
-          <button
-            onClick={handleSignOut}
+          <a
+            href="/auth/logout"
             className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-teal hover:text-teal"
           >
             <LogOutIcon size={16} />
             <span className="hidden sm:inline">Sign out</span>
-          </button>
+          </a>
         </div>
       </div>
 
