@@ -11,6 +11,21 @@ export interface BlogDay {
   wakeUp?: string;
   sleepDuration?: string;
   metrics?: Record<string, any>;
+  images?: string[];
+}
+
+export interface Destination {
+  dayNumber: number;
+  name: string;
+  lat: number;
+  lng: number;
+}
+
+export interface BlogMetrics {
+  totalDays: number;
+  totalKm: number;
+  stopsCount: number;
+  averageActivitiesPerDay: number;
 }
 
 export interface Blog {
@@ -24,6 +39,8 @@ export interface Blog {
   coverImage: string;
   title: string;
   description: string;
+  destinations?: Destination[];
+  metrics?: BlogMetrics;
   days: BlogDay[];
 }
 

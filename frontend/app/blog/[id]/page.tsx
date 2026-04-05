@@ -1,7 +1,7 @@
 'use client'
 
 import { notFound } from 'next/navigation'
-import { BlogPostContent } from '@/components/BlogPostContent'
+import { EnhancedBlogPostPage } from '@/components/EnhancedBlogPostPage'
 import { getBlogById } from '@/lib/blogData'
 
 interface BlogPageProps {
@@ -17,5 +17,5 @@ export default function BlogPage({ params }: BlogPageProps) {
     notFound()
   }
 
-  return <BlogPostContent blog={blog} />
+  return <EnhancedBlogPostPage blog={blog} />
 }

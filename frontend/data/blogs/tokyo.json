@@ -9,66 +9,87 @@
   "coverImage": "/images/posters/japan.png",
   "title": "14-Day Grand Japan Itinerary: Cities, Alps, and Coast",
   "description": "An epic journey through Japan's most iconic destinations - from the neon-lit streets of Tokyo to the serene temples of Kyoto.",
+  "destinations": [
+    { "dayNumber": 1, "name": "Shinjuku", "lat": 35.6595, "lng": 139.7004 },
+    { "dayNumber": 2, "name": "Asakusa", "lat": 35.7148, "lng": 139.7967 },
+    { "dayNumber": 3, "name": "Harajuku", "lat": 35.6654, "lng": 139.7014 }
+  ],
+  "metrics": {
+    "totalDays": 3,
+    "totalKm": 45,
+    "stopsCount": 12,
+    "averageActivitiesPerDay": 4
+  },
   "days": [
     {
       "dayNumber": 1,
       "date": "2024-04-01",
       "title": "Tokyo Arrival & Shinjuku",
-      "content": "Arrive at Narita (NRT) or Haneda (HND). Activate the JR Pass. Take the Narita Express (N'EX) or Monorail into central Tokyo.\n\nCheck into a Shinjuku hotel. Recover from jet lag with a low-key dinner at a local ramen shop and a walk through the neon-lit Kabukicho district."
+      "content": "Arrive at Narita (NRT) or Haneda (HND). Activate the JR Pass. Take the Narita Express (N'EX) or Monorail into central Tokyo.\n\nCheck into a Shinjuku hotel. Recover from jet lag with a low-key dinner at a local ramen shop and a walk through the neon-lit Kabukicho district.",
+      "images": ["/images/trip/japan/japan1.png", "/images/trip/japan/japan2.png", "/images/trip/japan/japan3.png"]
     },
     {
       "dayNumber": 2,
       "date": "2024-04-02",
       "title": "Tokyo - Tradition & Tech",
-      "content": "Morning: Visit Asakusa to see Senso-ji, Tokyo's oldest temple, and browse the Nakamise shopping street.\n\nAfternoon: Take the subway to Akihabara. Explore multi-story electronics stores, anime shops, and grab lunch at a maid cafe or standing sushi bar.\n\nEvening: Head to Shibuya to walk the famous Shibuya Crossing. Have dinner at a futuristic Izakaya."
+      "content": "Morning: Visit Asakusa to see Senso-ji, Tokyo's oldest temple, and browse the Nakamise shopping street.\n\nAfternoon: Take the subway to Akihabara. Explore multi-story electronics stores, anime shops, and grab lunch at a maid cafe or standing sushi bar.\n\nEvening: Head to Shibuya to walk the famous Shibuya Crossing. Have dinner at a futuristic Izakaya.",
+      "images": ["/images/trip/japan/japan4.png", "/images/trip/japan/japan5.png", "/images/trip/japan/japan6.png", "/images/trip/japan/japan7.png"]
     },
     {
       "dayNumber": 3,
       "date": "2024-04-03",
       "title": "Tokyo - Youth Culture & Fashion",
-      "content": "Morning: Walk through the serene Meiji Shrine forested grounds.\n\nAfternoon: Explore Harajuku's Takeshita Street for extreme youth fashion and crepe stands, then walk down Omotesando for high-end architecture.\n\nEvening: Visit Roppongi for high-altitude city views at the Mori Tower observation deck, followed by dinner in the area."
+      "content": "Morning: Walk through the serene Meiji Shrine forested grounds.\n\nAfternoon: Explore Harajuku's Takeshita Street for extreme youth fashion and crepe stands, then walk down Omotesando for high-end architecture.\n\nEvening: Visit Roppongi for high-altitude city views at the Mori Tower observation deck, followed by dinner in the area.",
+      "images": ["/images/trip/japan/japan8.png", "/images/trip/japan/japan9.png", "/images/trip/japan/japan10.png", "/images/trip/japan/japan11.png", "/images/trip/japan/japan13.png", "/images/trip/japan/japan14.png"]
     },
     {
       "dayNumber": 4,
       "date": "2024-04-04",
       "title": "Hakone - Mt. Fuji & Hot Springs",
-      "content": "Morning: Take the Romancecar train from Shinjuku to Hakone-Yumoto.\n\nAfternoon: Do the 'Hakone Loop'—ride the switchback mountain train, the cable car, the ropeway over volcanic sulfur vents (Owakudani), and a pirate ship across Lake Ashi for views of Mt. Fuji.\n\nEvening: Check into a traditional Ryokan. Eat a multi-course Kaiseki dinner and soak in a hot spring (Onsen)."
+      "content": "Morning: Take the Romancecar train from Shinjuku to Hakone-Yumoto.\n\nAfternoon: Do the 'Hakone Loop'—ride the switchback mountain train, the cable car, the ropeway over volcanic sulfur vents (Owakudani), and a pirate ship across Lake Ashi for views of Mt. Fuji.\n\nEvening: Check into a traditional Ryokan. Eat a multi-course Kaiseki dinner and soak in a hot spring (Onsen).",
+      "images": []
     },
     {
       "dayNumber": 5,
       "date": "2024-04-05",
       "title": "Takayama - The Japanese Alps",
-      "content": "Morning: Take the Shinkansen to Nagoya, then transfer to the Hida Wide View express train winding through the stunning river valleys of the Japanese Alps to Takayama.\n\nAfternoon: Walk through Takayama's beautifully preserved Sanmachi Suji historic district.\n\nEvening: Have dinner featuring the region's famous melt-in-your-mouth Hida beef."
+      "content": "Morning: Take the Shinkansen to Nagoya, then transfer to the Hida Wide View express train winding through the stunning river valleys of the Japanese Alps to Takayama.\n\nAfternoon: Walk through Takayama's beautifully preserved Sanmachi Suji historic district.\n\nEvening: Have dinner featuring the region's famous melt-in-your-mouth Hida beef.",
+      "images": []
     },
     {
       "dayNumber": 6,
       "date": "2024-04-06",
       "title": "Shirakawa-go & Kanazawa",
-      "content": "Morning: Take a Nohi bus from Takayama to Shirakawa-go, a UNESCO World Heritage village famous for its traditional thatched-roof farmhouses.\n\nAfternoon: Board another bus to Kanazawa. Visit Kenrokuen, ranked as one of Japan's top three landscape gardens.\n\nEvening: Walk through the Higashi Chaya geisha district. Eat fresh seafood from the nearby Sea of Japan."
+      "content": "Morning: Take a Nohi bus from Takayama to Shirakawa-go, a UNESCO World Heritage village famous for its traditional thatched-roof farmhouses.\n\nAfternoon: Board another bus to Kanazawa. Visit Kenrokuen, ranked as one of Japan's top three landscape gardens.\n\nEvening: Walk through the Higashi Chaya geisha district. Eat fresh seafood from the nearby Sea of Japan.",
+      "images": []
     },
     {
       "dayNumber": 7,
       "date": "2024-04-07",
       "title": "Kyoto - The Higashiyama District",
-      "content": "Morning: Take the Thunderbird Express train from Kanazawa down to Kyoto. Drop bags at the hotel.\n\nAfternoon: Visit Kiyomizu-dera, a massive wooden temple overlooking the city. Walk down the preserved historic streets of Sannen-zaka and Ninen-zaka.\n\nEvening: Stroll through Gion, keeping an eye out for Geiko and Maiko (geishas). Dinner in the Pontocho alley overlooking the river."
+      "content": "Morning: Take the Thunderbird Express train from Kanazawa down to Kyoto. Drop bags at the hotel.\n\nAfternoon: Visit Kiyomizu-dera, a massive wooden temple overlooking the city. Walk down the preserved historic streets of Sannen-zaka and Ninen-zaka.\n\nEvening: Stroll through Gion, keeping an eye out for Geiko and Maiko (geishas). Dinner in the Pontocho alley overlooking the river.",
+      "images": []
     },
     {
       "dayNumber": 8,
       "date": "2024-04-08",
       "title": "Kyoto - Silver Pavilion & Philosophers",
-      "content": "Morning: Visit Ginkaku-ji (The Silver Pavilion) and its immaculate dry sand garden.\n\nAfternoon: Walk the Philosopher's Path, a scenic stone walkway along a cherry-tree-lined canal. End at Nanzen-ji temple to see its massive wooden gate and brick aqueduct.\n\nEvening: Head to downtown Kyoto (Kawaramachi) for shopping and a casual dinner at Nishiki Market (if open late) or a nearby Tonkatsu restaurant."
+      "content": "Morning: Visit Ginkaku-ji (The Silver Pavilion) and its immaculate dry sand garden.\n\nAfternoon: Walk the Philosopher's Path, a scenic stone walkway along a cherry-tree-lined canal. End at Nanzen-ji temple to see its massive wooden gate and brick aqueduct.\n\nEvening: Head to downtown Kyoto (Kawaramachi) for shopping and a casual dinner at Nishiki Market (if open late) or a nearby Tonkatsu restaurant.",
+      "images": []
     },
     {
       "dayNumber": 9,
       "date": "2024-04-09",
       "title": "Kyoto - Bamboo & Golden Pavilion",
-      "content": "Morning: Head west to Arashiyama very early to walk the Bamboo Grove before the crowds arrive. Visit Tenryu-ji temple.\n\nAfternoon: Take the local bus to Kinkaku-ji (The Golden Pavilion), covered in real gold leaf.\n\nEvening: Rest at the hotel. This is a heavy walking day; order takeout or eat at a simple noodle shop near Kyoto Station."
+      "content": "Morning: Head west to Arashiyama very early to walk the Bamboo Grove before the crowds arrive. Visit Tenryu-ji temple.\n\nAfternoon: Take the local bus to Kinkaku-ji (The Golden Pavilion), covered in real gold leaf.\n\nEvening: Rest at the hotel. This is a heavy walking day; order takeout or eat at a simple noodle shop near Kyoto Station.",
+      "images": []
     },
     {
       "dayNumber": 10,
       "date": "2024-04-10",
       "title": "Nara - Giant Buddhas & Sacred Deer",
-      "content": "Morning: Take a 45-minute commuter train trip to Nara. Walk through Nara Park, where hundreds of sacred, free-roaming deer will bow for deer crackers.\n\nAfternoon: Visit Todai-ji, a massive wooden building housing a 15-meter-tall bronze Buddha statue. Visit the lantern-lined Kasuga Taisha shrine.\n\nEvening: Return to Kyoto to collect your bags, take a 15-minute Shinkansen to Osaka, and check into an Osaka hotel."
+      "content": "Morning: Take a 45-minute commuter train trip to Nara. Walk through Nara Park, where hundreds of sacred, free-roaming deer will bow for deer crackers.\n\nAfternoon: Visit Todai-ji, a massive wooden building housing a 15-meter-tall bronze Buddha statue. Visit the lantern-lined Kasuga Taisha shrine.\n\nEvening: Return to Kyoto to collect your bags, take a 15-minute Shinkansen to Osaka, and check into an Osaka hotel.",
+      "images": []
     }
   ]
 }

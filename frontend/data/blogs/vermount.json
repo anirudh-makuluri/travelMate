@@ -9,6 +9,18 @@
   "coverImage": "/images/posters/vermount.png",
   "title": "Travel Diary: The Vermonter Fall Tech-Detox",
   "description": "A serene escape from the digital world to Vermont's mountains and lakes, discovering nature and personal reflection.",
+  "destinations": [
+    { "dayNumber": 1, "name": "Brattleboro", "lat": 42.7490, "lng": -72.5756 },
+    { "dayNumber": 2, "name": "Stowe", "lat": 44.4619, "lng": -72.7108 },
+    { "dayNumber": 3, "name": "Mount Mansfield", "lat": 44.5227, "lng": -72.7106 },
+    { "dayNumber": 4, "name": "Burlington", "lat": 44.4759, "lng": -73.2121 }
+  ],
+  "metrics": {
+    "totalDays": 4,
+    "totalKm": 120,
+    "stopsCount": 8,
+    "averageActivitiesPerDay": 2
+  },
   "days": [
     {
       "dayNumber": 1,
@@ -24,7 +36,8 @@
         "dinnerCost": "$51.00",
         "stepsWalked": 12000,
         "temperature": "55°F"
-      }
+      },
+      "images": ["/images/trip/vermount/vermount1.png"]
     },
     {
       "dayNumber": 2,
@@ -43,7 +56,8 @@
         "dinnerCost": "$18.00",
         "kayakDuration": "2 hours",
         "trainDuration": "3 hours"
-      }
+      },
+      "images": ["/images/trip/vermount/vermount2.png"]
     },
     {
       "dayNumber": 3,
@@ -59,7 +73,8 @@
         "longTrailDistance": "4.5 miles",
         "caloriesBurned": 1200,
         "dinnerCost": "$67.00"
-      }
+      },
+      "images": ["/images/trip/vermount/vermount3.png"]
     },
     {
       "dayNumber": 4,
@@ -75,7 +90,8 @@
         "bikeRentalCost": "$50.00",
         "lunchCost": "$22.00",
         "uberToAirportCost": "$15.00"
-      }
+      },
+      "images": ["/images/trip/vermount/vermount4.png"]
     }
   ]
 }
