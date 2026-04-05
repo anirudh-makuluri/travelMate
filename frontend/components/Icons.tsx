@@ -200,7 +200,28 @@ export function UserIcon({ size = 24, className, ...props }: IconProps) {
   )
 }
 
-// Arrow icon
+// Arrow Left icon
+export function ArrowLeftIcon({ size = 20, className, ...props }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...props}
+    >
+      <polyline points="19 12 5 12" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
+  )
+}
+
+// Arrow Right icon
 export function ArrowRightIcon({ size = 20, className, ...props }: IconProps) {
   return (
     <svg
