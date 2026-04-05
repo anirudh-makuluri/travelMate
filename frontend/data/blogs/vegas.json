@@ -1,0 +1,87 @@
+{
+  "id": "vegas",
+  "destination": "Las Vegas",
+  "country": "USA",
+  "author": "Travel Enthusiast",
+  "authorAvatar": "👤",
+  "startDate": "2024-03-20",
+  "endDate": "2024-03-24",
+  "coverImage": "/images/posters/vegas.png",
+  "title": "Travel Diary: 5-Day Grand Canyon & Las Vegas Data-Driven Road Trip",
+  "description": "A high-energy road trip from Arizona through the Grand Canyon to the electrifying streets of Las Vegas, tracked with meticulous detail.",
+  "days": [
+    {
+      "dayNumber": 1,
+      "date": "2024-03-20",
+      "title": "Elevation Gains and the Edge of the World",
+      "wakeUp": "5:15 AM",
+      "sleepDuration": "6.5 hours",
+      "content": "The morning started in Tempe apartment. Sleep tracker logged exactly 6 hours and 32 minutes, mostly deep sleep. Breakfast at 5:45 AM: four whole eggs scrambled in butter, half an avocado, and whey isolate protein shake with black coffee. Total cost: $0 (groceries). Total macros: 45g protein, 32g fat, 6g carbs.\n\nLoaded bags and hit the road at 6:45 AM on I-17 North at 78 mph for fuel efficiency (2,400 RPMs). Temperature started at 72°F, dropped to 61°F near Sunset Point (5,000 ft elevation). Pulled into Chevron in Flagstaff at 9:15 AM (elevation 7,000 ft), added 10.2 gallons of 87-octane gas at $3.45/gallon ($35.19 total).\n\nTransitioned to US-180 West at 9:45 AM on two-lane road at 65 mph through ponderosa pine forests. Reached South Rim toll booth at 11:30 AM, paid $35.00 for 7-day private vehicle pass. Lunch at 12:15 PM: double grilled chicken breast salad with oil and vinegar ($18.50).\n\nStarted Rim Trail at 1:30 PM, walked 2.4 miles from Mather Point to Yavapai Geology Museum at 3 mph pace. Caught free Blue Line park shuttle to Hopi Point by 5:20 PM for sunset. Temperature dropped to 48°F. Checked into Holiday Inn Express Room 214 in Tusayan at 7:30 PM ($215.00/night). Dinner at Plaza Bonita at 8:15 PM: sizzling steak fajitas, double meat, no tortillas ($34.00 total with tip).",
+      "metrics": {
+        "gasCost": "$35.19",
+        "milesDriven": 168,
+        "parkFee": "$35.00",
+        "mealsCost": "$18.50"
+      }
+    },
+    {
+      "dayNumber": 2,
+      "date": "2024-03-21",
+      "title": "Descending into the Geological Stack",
+      "wakeUp": "5:00 AM",
+      "sleepDuration": "6.25 hours",
+      "content": "Alarm woke before dawn, dedicated entirely to Grand Canyon. Hit hotel complimentary breakfast at 5:30 AM: four turkey sausage links and scrambled eggs (~40g protein). Filled 2-liter hydration bladder with water and sugar-free electrolyte packet.\n\nParked near Bright Angel Trailhead by 6:15 AM. Morning air crisp at 42°F. Descent began at 6:30 AM through Kaibab Limestone and Toroweap Formation. Kept brisk pace of 2.5 mph downward. Reached 1.5-mile resthouse at 7:15 AM (1,120 foot elevation drop). Hike back up grueling; heart rate peaked at 165 BPM. Emerged at rim at 8:45 AM.\n\nDrove 25-mile Desert View Drive at 10:30 AM at 45 mph limit, stopping at Grandview Point and Lipan Point. Arrived at Desert View Watchtower at 12:30 PM. Lunch packed from cooler: two cans of tuna with mayo and almonds ($4.50 grocery cost).\n\nSpent afternoon at 2:00 PM writing Python scripts in El Tovar hotel lobby. Dinner splurge at 6:30 PM: 10oz prime rib with steamed asparagus ($62.00 total with tip). Returned to Holiday Inn Express exhausted, fell asleep at 9:30 PM.",
+      "metrics": {
+        "heartRatePeak": "165 BPM",
+        "elevationLoss": "1,120 ft",
+        "mealsCost": "$4.50",
+        "dinnerCost": "$62.00"
+      }
+    },
+    {
+      "dayNumber": 3,
+      "date": "2024-03-22",
+      "title": "Concrete Marvels and Neon Lights",
+      "wakeUp": "6:30 AM",
+      "sleepDuration": "9 hours",
+      "content": "Woke fully recovered. Breakfast another round of hotel eggs and sausage. Checked out by 8:30 AM, merged onto US-64 South at 65 mph, then I-40 West at Williams at 75 mph through northern Arizona desolate landscape.\n\nPulled off at Hoover Dam at 11:15 AM, paid $10.00 parking in concrete garage on Nevada side. Walked across Mike O'Callaghan–Pat Tillman Memorial Bridge—surreal structural engineering experience with 20 mph winds and 900 foot drop below. Skipped official tour to save time/money, back to car by 12:45 PM.\n\nHit Las Vegas city limits via US-93 North by 1:30 PM. Traffic bottlenecked on I-15 North, dropped to 15 mph crawl. Pulled into Planet Hollywood self-parking at 2:15 PM. Grabbed protein-heavy lettuce-wrapped chicken sandwich at Chick-fil-A ($9.45). Got digital key for Room 1412 at 3:30 PM. Room rate: $135.00 + $45.00 mandatory daily resort fee (Total: $180.00).\n\nWalked out onto Strip at 6:00 PM. Stood outside Bellagio at 8:00 PM to watch water fountains. Dinner at 9:00 PM at Gordon Ramsay Burger: Hell's Kitchen Burger on lettuce wrap ($39.00 total with tip). Walked 14,000 steps. Bed at 11:30 PM.",
+      "metrics": {
+        "parkingCost": "$10.00",
+        "hotelCost": "$180.00",
+        "mealsCost": "$48.45",
+        "stepsWalked": 14000,
+        "hooverDamVisit": "30 minutes"
+      }
+    },
+    {
+      "dayNumber": 4,
+      "date": "2024-03-23",
+      "title": "Immersive Data and Downtown History",
+      "wakeUp": "8:00 AM",
+      "sleepDuration": "8.5 hours",
+      "content": "Woke up feeling great. Walked to The LINQ promenade at 9:15 AM for brunch at Hash House A Go Go. Ordered roasted chicken skillet with substitution of crispy potatoes for sliced tomatoes and extra eggs ($43.00 total with tip).\n\nWalked to The Venetian at 11:30 AM, analyzing artificial sky ceiling in canal shoppes. Headed to Sphere at 1:30 PM. Pre-purchased mid-tier ticket for Postcard from Earth for $119.00. Sheer data processing rendering 16K resolution video across 160,000 square-foot LED canvas is staggering. Haptic feedback in seats synced perfectly with subwoofers—masterclass in hardware/software integration.\n\nCalled Uber at 4:30 PM to downtown Las Vegas (Fremont Street). 20-minute ride cost $18.50. Entered The Mob Museum at 5:00 PM, paid $34.95 general admission. Forensic science exhibits fascinating, detailing wiretapping and cryptographic analysis by FBI in 1980s.\n\nWalked out onto Fremont Street at 7:30 PM. Viva Vision light canopy flashing violently above. Dinner at 8:15 PM at 8 East inside Circa: 12 oz sizzling chicken skewers and small side of brisket fried rice ($54.00 total with tip). Uber back to hotel at 10:30 PM ($22.00 due to surge pricing). Bed by midnight.",
+      "metrics": {
+        "brunchCost": "$43.00",
+        "sphereTicketCost": "$119.00",
+        "mobMuseumCost": "$34.95",
+        "dinnerCost": "$54.00",
+        "uberCost": "$40.50"
+      }
+    },
+    {
+      "dayNumber": 5,
+      "date": "2024-03-24",
+      "title": "The Desert Sprint Home",
+      "wakeUp": "8:30 AM",
+      "sleepDuration": "8.5 hours",
+      "content": "Final day. Checked out via mobile app at 9:45 AM. Quick breakfast at Earl of Sandwich: roast beef sandwich, tossed top piece of bread for carbs ($12.00). In car navigating parking garage by 10:15 AM.\n\nMerged onto US-93 South at 10:45 AM. Mojave Desert heating up to 95°F by late morning. Set cruise control to 75 mph, listened to three-hour podcast on vector databases to get head back into hackathon mode. Crossed Arizona border at 12:45 PM, stopped in Kingman for gas. Tank took 11.5 gallons at $3.60/gallon ($41.40).\n\nPulled into In-N-Out Burger drive-thru at 1:15 PM. Ordered two Double-Doubles 'Protein Style' (wrapped in lettuce) with mustard ($14.50). Ate in parking lot while idling with AC on full blast.\n\nGot back on road at 1:45 PM, merged onto US-60 East. Traffic picked up approaching Surprise and Peoria. Pulled into apartment complex in Tempe at 4:30 PM. Trip odometer read exactly 812 miles. Ready to parse data into JSON payload for RAG pipeline.",
+      "metrics": {
+        "breakfastCost": "$12.00",
+        "gasCost": "$41.40",
+        "mealsCost": "$14.50",
+        "totalMilesDriven": 812,
+        "tripDuration": "5 days"
+      }
+    }
+  ]
+}

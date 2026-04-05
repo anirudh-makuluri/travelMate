@@ -1,0 +1,81 @@
+{
+  "id": "vermount",
+  "destination": "Vermont",
+  "country": "USA",
+  "author": "Travel Enthusiast",
+  "authorAvatar": "👤",
+  "startDate": "2024-10-10",
+  "endDate": "2024-10-13",
+  "coverImage": "/images/posters/vermount.png",
+  "title": "Travel Diary: The Vermonter Fall Tech-Detox",
+  "description": "A serene escape from the digital world to Vermont's mountains and lakes, discovering nature and personal reflection.",
+  "days": [
+    {
+      "dayNumber": 1,
+      "date": "2024-10-10",
+      "title": "Escaping the Concrete Grid",
+      "wakeUp": "7:30 AM",
+      "sleepDuration": "7.5 hours",
+      "content": "Started in New York City. Quick breakfast near Penn Station: three scrambled eggs with spinach and black iced coffee ($12.50). Total macros: 25g protein, 15g fat, minimal carbs.\n\nInside Moynihan Train Hall with massive glass ceiling by 10:45 AM. Boarded northbound Amtrak Vermonter at 11:30 AM. Coach ticket booked in advance for $65.00 with right-side window seat for best views of Connecticut River. Once we cleared urban sprawl of Bronx and Connecticut, landscape opened into rolling forested river valleys. Train Wi-Fi spotty through heavy tree cover, so spent five-hour journey offline sketching system architecture diagrams for RAG project.\n\nTrain pulled into Brattleboro, Vermont, exactly at 4:32 PM. Air immediately crisper—around 55°F. Walked five minutes from station and checked into The Latchis Hotel ($185.00/night). At 6:00 PM, walked to Retreat Farm to catch sunset over meadows. Walked roughly 1.5 miles of trails.\n\nDinner in downtown Brattleboro at 7:30 PM at Peter Havens. Pan-seared duck breast with wild rice substituted for roasted root vegetables to keep carbs in check ($51.00 total with tip). Walked 12,000 steps today. Asleep by 10:30 PM.",
+      "metrics": {
+        "breakfastCost": "$12.50",
+        "trainTicketCost": "$65.00",
+        "hotelCost": "$185.00",
+        "dinnerCost": "$51.00",
+        "stepsWalked": 12000,
+        "temperature": "55°F"
+      }
+    },
+    {
+      "dayNumber": 2,
+      "date": "2024-10-11",
+      "title": "Paddling and the Green Mountain Express",
+      "wakeUp": "7:00 AM",
+      "sleepDuration": "8.5 hours",
+      "content": "Woke up feeling completely refreshed. Hit local cafe at 8:00 AM for two hard-boiled eggs and large black coffee ($6.50). By 9:00 AM, down by Connecticut River. Rented kayak from Vermont Canoe Touring Center for morning ($35.00). Paddling against mild current fantastic upper-body workout, river dead quiet except for occasional heron. Spent exactly two hours on water.\n\nGrabbed quick lunch at 12:30 PM at Brattleboro Food Co-op: massive salad loaded with grilled chicken, pumpkin seeds, and olive oil ($14.00). Back on platform at 1:05 PM boarding northbound Vermonter. Ticket from Brattleboro to Waterbury-Stowe station incredibly cheap at just $19.00. Three-hour leg stunning—train cuts directly through heart of Green Mountains surrounded by dense, unbroken pine forests.\n\nArrived at Waterbury-Stowe station at 4:05 PM. Ordered Uber ($25.00) for 15-minute drive north into village of Stowe. Classic New England mountain town nestled in valley. Checked into Green Mountain Inn at 5:00 PM ($245.00/night).\n\nDinner at The Alchemist Brewery at 6:30 PM. Famous for IPAs but skipped beer to stay on diet. Demolished double-patty smash burger on bed of greens instead of bun from local food truck parked outside ($18.00). Asleep by 11:00 PM.",
+      "metrics": {
+        "breakfastCost": "$6.50",
+        "kayakRentalCost": "$35.00",
+        "lunchCost": "$14.00",
+        "trainTicketCost": "$19.00",
+        "uberCost": "$25.00",
+        "hotelCost": "$245.00",
+        "dinnerCost": "$18.00",
+        "kayakDuration": "2 hours",
+        "trainDuration": "3 hours"
+      }
+    },
+    {
+      "dayNumber": 3,
+      "date": "2024-10-12",
+      "title": "High Elevation and Hidden Gorges",
+      "wakeUp": "6:30 AM",
+      "sleepDuration": "7.5 hours",
+      "content": "Day all about altitude. Breakfast at inn: three-egg omelet with ham and cheddar cheese ($16.00). Caught local shuttle at 8:00 AM ($5.00) up to Mount Mansfield State Forest. Target was Bingham Falls. Hike relatively short but involves steep, scrambling descent into dense pine forest gorge. Water cascades 40 feet into freezing, crystal-clear pool. Spent two hours exploring rocks around gorge.\n\nTook another shuttle at 1:30 PM further up mountain to Smugglers' Notch State Park. Pass incredibly narrow, flanked by 1,000-foot limestone cliffs. Hiked section of Long Trail logging 4.5 miles and significant elevation gain. Smartwatch clocked 1,200 active calories burned.\n\nReturned to Stowe via shuttle at 5:30 PM. Dinner at 6:30 PM at Harrison's Restaurant: massive cut of prime rib with mashed potatoes substituted for steamed broccoli ($67.00 total with tip). Took slow evening walk along paved Stowe Recreation Path following West Branch of Little River in dark. Returned to Green Mountain Inn and crashed by 10:00 PM.",
+      "metrics": {
+        "breakfastCost": "$16.00",
+        "shuttleCost": "$5.00",
+        "binghamFallsHikeTime": "2 hours",
+        "longTrailDistance": "4.5 miles",
+        "caloriesBurned": 1200,
+        "dinnerCost": "$67.00"
+      }
+    },
+    {
+      "dayNumber": 4,
+      "date": "2024-10-13",
+      "title": "Lake Champlain and the Flight Home",
+      "wakeUp": "7:30 AM",
+      "sleepDuration": "9.5 hours",
+      "content": "Final day of trip. Slept in heavily to recover from yesterday's hiking. Grabbed protein bar from bag and coffee ($4.00). Ordered rideshare from Stowe to Burlington at 8:30 AM. 45-minute drive cost $65.00, dropped right on waterfront of Lake Champlain by 9:30 AM.\n\nBurlington is Vermont's largest city with incredibly active vibe. Rented men's hybrid bike at 10:00 AM for $50.00. Spent next three hours riding Burlington Bike Path. Trail fully paved and runs directly along edge of Lake Champlain. To west, massive peaks of Adirondack Mountains in New York dominated horizon across water. Rode 12 miles total, burning off last vacation energy.\n\nReturned bike at 1:30 PM and grabbed quick lunch near waterfront: grilled salmon over greens ($22.00). Caught $15.00 Uber at 3:00 PM to Burlington International Airport (BTV). Spent two hours before flight outlining database schema for hackathon based on all metrics collected. Boarded plane at 5:00 PM to fly back to Phoenix, wrapping up perfect transit-based tech detox.",
+      "metrics": {
+        "proteinBarAndCoffeeCost": "$4.00",
+        "rideShareCost": "$65.00",
+        "bikingDistance": "12 miles",
+        "bikeRentalCost": "$50.00",
+        "lunchCost": "$22.00",
+        "uberToAirportCost": "$15.00"
+      }
+    }
+  ]
+}
