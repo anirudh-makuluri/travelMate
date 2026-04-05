@@ -1,0 +1,16 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tripmindGradient" x1="12" y1="10" x2="52" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0D7377" />
+      <stop offset="1" stop-color="#1594A0" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="url(#tripmindGradient)" />
+  <circle cx="32" cy="32" r="17" stroke="white" stroke-width="3.5" />
+  <path
+    d="M32 16L36.1 24.3L45.3 25.6L38.7 32L40.2 41.2L32 36.8L23.8 41.2L25.3 32L18.7 25.6L27.9 24.3L32 16Z"
+    stroke="white"
+    stroke-width="3"
+    stroke-linejoin="round"
+  />
+</svg>

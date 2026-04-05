@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '@/store/appStore'
 import type { Message } from '@/store/appStore'
+import japanTheme from '@/images/themes/japanTheme.png'
 import { CompassIcon, LogOutIcon, MicIcon, SendIcon, UserIcon } from './Icons'
 import { ItineraryCard } from './ItineraryCard'
 import { cn } from '@/lib/utils'
@@ -30,6 +31,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
   const [itineraryInlineAfterMessageId, setItineraryInlineAfterMessageId] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const hasSeededInitialMessageRef = useRef(false)
   const revealIntervalsRef = useRef<Record<string, ReturnType<typeof setInterval>>>({})
   const hasStartedCompanionFlowRef = useRef(false)
@@ -42,6 +44,33 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
   const setItinerary = useAppStore((state) => state.setItinerary)
   const isRecording = useAppStore((state) => state.isRecording)
   const setRecording = useAppStore((state) => state.setRecording)
+
+  const isJapanDestinationText = (value: string) => {
+    const normalizedValue = value.trim().toLowerCase()
+
+    return [
+      'japan',
+      'tokyo',
+      'kyoto',
+      'osaka',
+      'hokkaido',
+      'okinawa',
+      'nara',
+      'sapporo',
+      'shibuya',
+      'hakone',
+    ].some((term) => normalizedValue.includes(term))
+  }
+
+  const hasJapanTheme =
+    itinerary?.country.toLowerCase() === 'japan' ||
+    messages.some((message) => message.role === 'user' && isJapanDestinationText(message.content))
+
+  const activeDestinationLabel = itinerary
+    ? `${itinerary.destination}, ${itinerary.country}`
+    : hasJapanTheme
+      ? 'Tokyo, Japan'
+      : null
 
   const sleep = (ms: number) =>
     new Promise((resolve) => {
@@ -475,6 +504,20 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
     return (revealedCharsByMessageId[message.id] ?? 0) >= message.content.length
   }
 
+  const activeOptionsMessage = [...messages].reverse().find((message, reverseIndex) => {
+    if (
+      message.role !== 'agent' ||
+      message.isTyping ||
+      !message.options?.length ||
+      !isAgentMessageFullyRevealed(message)
+    ) {
+      return false
+    }
+
+    const originalIndex = messages.length - 1 - reverseIndex
+    return !messages.slice(originalIndex + 1).some((laterMessage) => laterMessage.role === 'user')
+  })
+
   const handleUserMessage = async (rawMessage: string) => {
     const userMessage = rawMessage.trim()
     if (!userMessage || isLoading) return
@@ -669,6 +712,19 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
   }
 
   const handleOptionClick = async (option: string) => {
+    if (option === 'Other' && flowStep === 'awaiting-preferences') {
+      addMessage({
+        role: 'agent',
+        content:
+          'Perfect. Share budget, stay style, dietary needs, and preferred pace in one message.\n\nCan you share your preferences in one line so I can personalize the plan?',
+        timestamp: new Date(),
+      })
+      setFlowStep('awaiting-preferences-custom')
+      setInput('Budget: $$, Stay: boutique, Dietary: vegetarian, Pace: balanced')
+      setTimeout(() => inputRef.current?.focus(), 0)
+      return
+    }
+
     await handleUserMessage(option)
   }
 
@@ -678,12 +734,22 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
 
   return (
     <div className="fixed left-[220px] right-[280px] top-0 h-screen bg-gradient-to-b from-cream to-warm-white flex flex-col overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-100 bg-white/50 backdrop-blur-sm flex items-center justify-between">
+      <div className="flex items-center justify-between border-b border-white/60 bg-white/55 px-6 py-4 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-teal to-ocean rounded-lg flex items-center justify-center">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal to-ocean shadow-[0_10px_20px_rgba(13,115,119,0.2)]">
             <CompassIcon size={18} className="text-white" />
           </div>
-          <h1 className="text-lg font-bold text-text-primary">TripMind</h1>
+          <div>
+            <h1 className="text-lg font-bold text-text-primary">TripMind</h1>
+            {activeDestinationLabel && (
+              <p className="mt-0.5 text-xs font-medium text-teal">{activeDestinationLabel}</p>
+            )}
+          </div>
+          {hasJapanTheme && (
+            <div className="hidden rounded-full border border-[#d8e6e5] bg-white/75 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-teal shadow-sm sm:block">
+              Japan Mode
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
@@ -700,7 +766,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           </div>
           <a
             href="/auth/logout"
-            className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-teal hover:text-teal"
+            className="signout-button interactive-float flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-teal hover:text-teal"
           >
             <LogOutIcon size={16} />
             <span className="hidden sm:inline">Sign out</span>
@@ -708,14 +774,25 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+      <div className="relative flex-1 overflow-hidden px-4 py-4">
+        <div className="glass-panel relative z-10 h-full overflow-hidden rounded-[30px] border border-white/70 bg-white/48">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-700 ease-out"
+          style={{
+            backgroundImage: `url(${japanTheme.src})`,
+            opacity: hasJapanTheme ? 0.7 : 0,
+          }}
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/60 via-white/42 to-white/58" />
+        <div className="relative z-10 h-full overflow-y-auto px-6 pb-40 pt-6 space-y-4">
         {messages.map((message) => (
           <div
             key={message.id}
             className={cn('flex gap-3 message-enter', message.role === 'user' && 'justify-end')}
           >
             {message.role === 'agent' && (
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal to-ocean flex-shrink-0 flex items-center justify-center">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal to-ocean shadow-[0_10px_18px_rgba(13,115,119,0.18)]">
                 <CompassIcon size={16} className="text-white" />
               </div>
             )}
@@ -723,10 +800,10 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
             <div className="max-w-md">
               <div
                 className={cn(
-                  'rounded-lg px-4 py-3 transition-all duration-300',
+                  'rounded-2xl px-4 py-3 transition-all duration-300',
                   message.role === 'user'
-                    ? 'bg-teal text-white rounded-br-sm'
-                    : 'bg-white text-text-primary rounded-bl-sm border border-gray-100 shadow-sm'
+                    ? 'rounded-br-sm bg-gradient-to-br from-teal to-[#1594a0] text-white shadow-[0_14px_24px_rgba(13,115,119,0.22)]'
+                    : 'rounded-bl-sm border border-white/90 bg-white/94 text-text-primary shadow-[0_12px_22px_rgba(15,23,42,0.1)]'
                 )}
               >
                 {message.isTyping ? (
@@ -743,38 +820,10 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
                 )}
               </div>
 
-              {message.role === 'agent' &&
-                !message.isTyping &&
-                isAgentMessageFullyRevealed(message) &&
-                message.options &&
-                message.options.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {message.options.map((option) => (
-                      <button
-                        key={option}
-                        onClick={() => handleOptionClick(option)}
-                        disabled={isLoading}
-                        className="px-3 py-2 bg-white border border-gray-200 rounded-full text-xs text-text-primary hover:border-teal hover:text-teal transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                      >
-                        {option}
-                      </button>
-                    ))}
-                    {message.showOtherOption && (
-                      <button
-                        onClick={() => handleOptionClick('Other')}
-                        disabled={isLoading}
-                        className="px-3 py-2 bg-white border border-gray-200 rounded-full text-xs text-text-primary hover:border-teal hover:text-teal transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                      >
-                        Other
-                      </button>
-                    )}
-                  </div>
-                )}
-
               {itinerary &&
                 message.role === 'agent' &&
                 itineraryInlineAfterMessageId === message.id && (
-                  <div className="mt-3">
+                  <div className="mt-4 max-w-2xl rounded-[30px] border border-white/85 bg-white/58 p-2 shadow-[0_18px_34px_rgba(15,23,42,0.1)] backdrop-blur-sm">
                     <ItineraryCard itinerary={itinerary} />
                   </div>
                 )}
@@ -784,13 +833,38 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
 
         <div ref={messagesEndRef} />
       </div>
+        <div className="absolute inset-x-0 bottom-0 z-20 p-6">
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-3">
+        {activeOptionsMessage && (
+          <div className="flex flex-wrap gap-2 rounded-[26px] border border-white/85 bg-white/52 p-3 shadow-[0_14px_28px_rgba(15,23,42,0.08)] backdrop-blur-md">
+            {activeOptionsMessage.options?.map((option) => (
+              <button
+                key={option}
+                onClick={() => handleOptionClick(option)}
+                disabled={isLoading}
+                className="rounded-full border border-white/95 bg-white/94 px-4 py-2.5 text-sm font-medium text-text-primary shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal/50 hover:bg-white hover:text-teal disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {option}
+              </button>
+            ))}
+            {activeOptionsMessage.showOtherOption && (
+              <button
+                onClick={() => handleOptionClick('Other')}
+                disabled={isLoading}
+                className="rounded-full border border-white/95 bg-white/94 px-4 py-2.5 text-sm font-medium text-text-primary shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-teal/50 hover:bg-white hover:text-teal disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Other
+              </button>
+            )}
+          </div>
+        )}
 
-      <div className="px-6 py-4 bg-white border-t border-gray-100">
-        <div className="flex items-center gap-3 bg-warm-white rounded-full px-4 py-3 border border-gray-100 focus-within:border-teal focus-within:shadow-md transition-all duration-300">
+        <div className="glass-panel flex items-center gap-3 rounded-full border border-white/90 bg-warm-white/92 px-4 py-3 shadow-[0_18px_34px_rgba(15,23,42,0.12)] transition-all duration-300 focus-within:border-teal focus-within:shadow-[0_16px_28px_rgba(13,115,119,0.14)]">
           <button
             onClick={handleMicToggle}
             className={cn(
-              'p-2 rounded-full transition-all duration-300 flex-shrink-0',
+              'mic-button interactive-float p-2 rounded-full transition-all duration-300 flex-shrink-0',
+              isRecording && 'is-recording',
               isRecording ? 'bg-teal/20 text-teal' : 'text-text-muted hover:text-teal'
             )}
           >
@@ -798,6 +872,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           </button>
 
           <input
+            ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -811,7 +886,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           <button
             onClick={handleSendMessage}
             disabled={!input.trim() || isLoading}
-            className="p-2 text-teal hover:bg-teal/10 rounded-full transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="send-button interactive-float p-2 text-teal hover:bg-teal/10 rounded-full transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <SendIcon size={20} />
           </button>
@@ -820,6 +895,9 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
         <p className="text-xs text-text-muted text-center mt-3">
           Chat feels live: longer thinking, streaming text, and quick-reply choices.
         </p>
+        </div>
+        </div>
+      </div>
       </div>
     </div>
   )

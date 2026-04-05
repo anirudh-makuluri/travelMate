@@ -44,11 +44,164 @@ body {
 
 /* Message animations */
 .message-enter {
-  animation: slide-up 0.3s ease-out;
+  animation: bubble-in 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .pref-update {
-  animation: highlight 1s ease-in-out;
+  animation: dna-pulse 1.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.glass-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.64));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 18px 50px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.section-reveal {
+  opacity: 0;
+  transform: translateY(18px) scale(0.985);
+  transition:
+    opacity 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.section-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.stagger-fade {
+  animation: stagger-fade 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.interactive-float {
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease;
+  will-change: transform;
+}
+
+.interactive-float:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(13, 115, 119, 0.14);
+}
+
+.interactive-float:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.signout-button .logout-arrow-line,
+.signout-button .logout-arrow-head {
+  transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: center;
+}
+
+.signout-button:hover .logout-arrow-line,
+.signout-button:hover .logout-arrow-head {
+  transform: translateX(2px);
+}
+
+.send-button .send-plane,
+.send-button .send-trail {
+  transition:
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 180ms ease;
+  transform-origin: center;
+}
+
+.send-button .send-trail {
+  opacity: 0;
+  stroke-linecap: round;
+}
+
+.send-button:hover .send-plane {
+  transform: translate(1.5px, -1.5px);
+}
+
+.send-button:hover .send-trail {
+  opacity: 1;
+}
+
+.send-button:hover .send-trail-one {
+  transform: translate(-1px, 1px);
+}
+
+.send-button:hover .send-trail-two {
+  transform: translate(-1.5px, 0.5px);
+}
+
+.send-button:hover .send-trail-three {
+  transform: translate(-0.5px, -0.5px);
+}
+
+.mic-button {
+  position: relative;
+}
+
+.mic-button::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 1px solid rgba(13, 115, 119, 0);
+  opacity: 0;
+  transition:
+    opacity 220ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms ease;
+  transform: scale(0.92);
+  pointer-events: none;
+}
+
+.mic-button:hover::after {
+  opacity: 1;
+  transform: scale(1);
+  border-color: rgba(13, 115, 119, 0.25);
+}
+
+.mic-button .mic-capsule,
+.mic-button .mic-arc,
+.mic-button .mic-stem,
+.mic-button .mic-base {
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 220ms ease,
+    stroke 220ms ease,
+    fill 220ms ease;
+  transform-origin: center;
+}
+
+.mic-button:hover .mic-capsule {
+  transform: translateY(-1px) scaleY(1.03);
+}
+
+.mic-button:hover .mic-arc {
+  transform: scale(1.03);
+}
+
+.mic-button.is-recording {
+  animation: mic-live-glow 1.5s ease-in-out infinite;
+}
+
+.mic-button.is-recording::after {
+  opacity: 1;
+  border-color: rgba(13, 115, 119, 0.32);
+  animation: mic-ring-pulse 1.5s ease-out infinite;
+}
+
+.mic-button.is-recording .mic-capsule {
+  animation: mic-capsule-pulse 1.1s ease-in-out infinite;
+}
+
+.mic-button.is-recording .mic-arc {
+  animation: mic-wave-pulse 1.1s ease-in-out infinite;
 }
 
 .typing-dots {
@@ -88,6 +241,17 @@ body {
   }
 }
 
+@keyframes bubble-in {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @keyframes highlight {
   0% {
     background-color: rgba(13, 115, 119, 0);
@@ -97,6 +261,24 @@ body {
   }
   100% {
     background-color: rgba(13, 115, 119, 0);
+  }
+}
+
+@keyframes dna-pulse {
+  0% {
+    transform: translateX(0) scale(1);
+    background-color: rgba(13, 115, 119, 0);
+    box-shadow: 0 0 0 0 rgba(13, 115, 119, 0);
+  }
+  35% {
+    transform: translateX(2px) scale(1.02);
+    background-color: rgba(13, 115, 119, 0.12);
+    box-shadow: 0 0 0 10px rgba(13, 115, 119, 0.08);
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    background-color: rgba(13, 115, 119, 0);
+    box-shadow: 0 0 0 0 rgba(13, 115, 119, 0);
   }
 }
 
@@ -120,5 +302,63 @@ body {
   }
   50% {
     opacity: 1;
+  }
+}
+
+@keyframes stagger-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mic-ring-pulse {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.9);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+}
+
+@keyframes mic-live-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(13, 115, 119, 0.14);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(13, 115, 119, 0.08);
+  }
+}
+
+@keyframes mic-capsule-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes mic-wave-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
   }
 }

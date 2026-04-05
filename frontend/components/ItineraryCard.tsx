@@ -1,8 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { ChevronDownIcon, ArrowRightIcon, CalendarIcon, PlaneIcon, HotelIcon, MapPinIcon } from './Icons'
+import {
+  ChevronDownIcon,
+  ArrowRightIcon,
+  CalendarIcon,
+  PlaneIcon,
+  HotelIcon,
+  MapPinIcon,
+} from './Icons'
 import { cn, formatDate } from '@/lib/utils'
 import { Itinerary } from '@/store/appStore'
 
@@ -12,6 +19,33 @@ interface ItineraryCardProps {
 
 export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
   const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set([1]))
+  const [visibleSections, setVisibleSections] = useState({
+    hero: false,
+    details: false,
+    days: false,
+    cta: false,
+  })
+
+  useEffect(() => {
+    setExpandedDays(new Set([1]))
+    setVisibleSections({
+      hero: false,
+      details: false,
+      days: false,
+      cta: false,
+    })
+
+    const timers = [
+      setTimeout(() => setVisibleSections((prev) => ({ ...prev, hero: true })), 60),
+      setTimeout(() => setVisibleSections((prev) => ({ ...prev, details: true })), 180),
+      setTimeout(() => setVisibleSections((prev) => ({ ...prev, days: true })), 320),
+      setTimeout(() => setVisibleSections((prev) => ({ ...prev, cta: true })), 460),
+    ]
+
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer))
+    }
+  }, [itinerary])
 
   const toggleDayExpanded = (dayNumber: number) => {
     const newExpanded = new Set(expandedDays)
@@ -24,49 +58,52 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 slide-up animate-fade-in max-w-2xl mx-auto">
-      {/* Hero Image */}
-      <div className="relative h-64 w-full overflow-hidden bg-gray-200">
+    <div className="glass-panel mx-auto max-w-2xl overflow-hidden rounded-[28px] border border-white/70 shadow-[0_24px_48px_rgba(15,23,42,0.1)]">
+      <div
+        className={cn(
+          'section-reveal relative h-64 w-full overflow-hidden bg-gray-200',
+          visibleSections.hero && 'is-visible'
+        )}
+      >
         <Image
           src={itinerary.heroImage}
           alt={itinerary.destination}
           fill
-          className="object-cover"
+          className="object-cover scale-[1.03]"
           priority
           unoptimized
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/10 via-black/5 to-black/55" />
         <div className="absolute bottom-6 left-6">
-          <h2 className="text-3xl font-bold text-white mb-1">
-            {itinerary.destination}
-          </h2>
+          <h2 className="mb-1 text-3xl font-bold text-white">{itinerary.destination}</h2>
           <p className="text-sm text-gray-100">{itinerary.country}</p>
         </div>
       </div>
 
-      {/* Trip Details */}
-      <div className="p-6 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100">
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          {/* Flight Info */}
-          <div className="bg-white rounded-lg p-4 border border-gray-100">
-            <div className="flex items-center gap-2 mb-3">
+      <div
+        className={cn(
+          'section-reveal border-b border-white/70 bg-gradient-to-br from-white/90 to-[#f8fbfb] p-6',
+          visibleSections.details && 'is-visible'
+        )}
+      >
+        <div className="mb-6 grid grid-cols-2 gap-4">
+          <div className="rounded-2xl border border-white bg-white/85 p-4 shadow-sm">
+            <div className="mb-3 flex items-center gap-2">
               <PlaneIcon size={18} className="text-teal" />
-              <span className="text-xs font-semibold text-text-muted uppercase tracking-wide">
+              <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">
                 Flights
               </span>
             </div>
             <div className="mb-2">
-              <div className="text-sm font-semibold text-text-primary mb-1">
+              <div className="mb-1 text-sm font-semibold text-text-primary">
                 {itinerary.flights.airline}
               </div>
-              <div className="flex items-center gap-2 text-xs text-text-muted mb-2">
+              <div className="mb-2 flex items-center gap-2 text-xs text-text-muted">
                 <span>{itinerary.flights.departure}</span>
                 <ArrowRightIcon size={14} />
                 <span>{itinerary.flights.arrival}</span>
               </div>
-              <div className="text-lg font-bold text-teal">
-                ${itinerary.flights.price}
-              </div>
+              <div className="text-lg font-bold text-teal">${itinerary.flights.price}</div>
             </div>
             <div className="flex items-center gap-1 text-xs text-text-muted">
               <CalendarIcon size={14} />
@@ -74,34 +111,30 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
             </div>
           </div>
 
-          {/* Hotel Info */}
-          <div className="bg-white rounded-lg p-4 border border-gray-100">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="rounded-2xl border border-white bg-white/85 p-4 shadow-sm">
+            <div className="mb-3 flex items-center gap-2">
               <HotelIcon size={18} className="text-teal" />
-              <span className="text-xs font-semibold text-text-muted uppercase tracking-wide">
+              <span className="text-xs font-semibold uppercase tracking-wide text-text-muted">
                 Hotel
               </span>
             </div>
             <div className="mb-2">
-              <div className="text-sm font-semibold text-text-primary mb-1">
+              <div className="mb-1 text-sm font-semibold text-text-primary">
                 {itinerary.hotel.name}
               </div>
-              <div className="flex items-center gap-1 mb-2">
+              <div className="mb-2 flex items-center gap-1">
                 {[...Array(itinerary.hotel.rating)].map((_, i) => (
-                  <span key={i} className="text-sm">⭐</span>
+                  <span key={i} aria-hidden="true" className="text-sm text-amber-400">
+                    *
+                  </span>
                 ))}
-                <span className="text-xs text-text-muted">
-                  ({itinerary.hotel.rating}/5)
-                </span>
+                <span className="text-xs text-text-muted">({itinerary.hotel.rating}/5)</span>
               </div>
-              <div className="text-lg font-bold text-teal">
-                ${itinerary.hotel.price}/night
-              </div>
+              <div className="text-lg font-bold text-teal">${itinerary.hotel.price}/night</div>
             </div>
           </div>
         </div>
 
-        {/* Trip Duration */}
         <div className="text-center text-xs text-text-muted">
           <span>{formatDate(itinerary.startDate)}</span>
           <span className="mx-2">•</span>
@@ -109,19 +142,21 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
         </div>
       </div>
 
-      {/* Day-by-Day Itinerary */}
-      <div className="divide-y divide-gray-100">
+      <div
+        className={cn(
+          'section-reveal divide-y divide-gray-100',
+          visibleSections.days && 'is-visible'
+        )}
+      >
         {itinerary.days.map((day) => (
-          <div key={day.dayNumber} className="bg-white">
+          <div key={day.dayNumber} className="bg-white/90">
             <button
               onClick={() => toggleDayExpanded(day.dayNumber)}
-              className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              className="flex w-full items-center justify-between px-6 py-4 text-left transition-colors hover:bg-[#f8fcfc]"
             >
-              <div className="text-left">
-                <h3 className="text-sm font-semibold text-text-primary">
-                  Day {day.dayNumber} — {formatDate(day.date)}
-                </h3>
-              </div>
+              <h3 className="text-sm font-semibold text-text-primary">
+                Day {day.dayNumber} - {formatDate(day.date)}
+              </h3>
               <ChevronDownIcon
                 size={18}
                 className={cn(
@@ -132,31 +167,26 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
             </button>
 
             {expandedDays.has(day.dayNumber) && (
-              <div className="px-6 pb-4 bg-gray-50 space-y-3">
+              <div className="space-y-3 bg-[#f7fbfb] px-6 pb-4">
                 {day.activities.map((activity, idx) => (
                   <div
-                    key={idx}
-                    className="flex gap-4 pb-3 last:pb-0 border-b border-white last:border-b-0"
+                    key={`${day.dayNumber}-${activity.time}-${idx}`}
+                    className="stagger-fade flex gap-4 border-b border-white pb-3 last:border-b-0 last:pb-0"
+                    style={{ animationDelay: `${idx * 90}ms` }}
                   >
-                    <div className="text-right min-w-fit">
-                      <span className="text-xs font-semibold text-teal">
-                        {activity.time}
-                      </span>
+                    <div className="min-w-fit text-right">
+                      <span className="text-xs font-semibold text-teal">{activity.time}</span>
                     </div>
                     <div className="flex-1">
-                      <h4 className="text-sm font-semibold text-text-primary mb-1">
+                      <h4 className="mb-1 text-sm font-semibold text-text-primary">
                         {activity.name}
                       </h4>
-                      <div className="flex items-center gap-1 mb-1">
+                      <div className="mb-1 flex items-center gap-1">
                         <MapPinIcon size={14} className="text-text-muted" />
-                        <span className="text-xs text-text-muted">
-                          {activity.location}
-                        </span>
+                        <span className="text-xs text-text-muted">{activity.location}</span>
                       </div>
                       {activity.description && (
-                        <p className="text-xs text-text-muted italic">
-                          {activity.description}
-                        </p>
+                        <p className="text-xs italic text-text-muted">{activity.description}</p>
                       )}
                     </div>
                   </div>
@@ -167,9 +197,13 @@ export const ItineraryCard = ({ itinerary }: ItineraryCardProps) => {
         ))}
       </div>
 
-      {/* CTA */}
-      <div className="p-6 bg-teal/5 border-t border-teal/10">
-        <button className="w-full px-4 py-3 bg-teal text-white rounded-lg font-medium text-sm hover:bg-teal-light transition-colors">
+      <div
+        className={cn(
+          'section-reveal border-t border-teal/10 bg-teal/5 p-6',
+          visibleSections.cta && 'is-visible'
+        )}
+      >
+        <button className="w-full rounded-2xl bg-teal px-4 py-3 text-sm font-medium text-white shadow-[0_14px_24px_rgba(13,115,119,0.18)] transition-colors hover:bg-teal-light">
           Save This Itinerary
         </button>
       </div>

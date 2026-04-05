@@ -89,10 +89,10 @@ export function MicIcon({ size = 24, className, isActive = false, ...props }: Mi
       className={className}
       {...props}
     >
-      <path d="M12 1a3 3 0 0 0-3 3v12a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-      <line x1="12" y1="19" x2="12" y2="23" />
-      <line x1="8" y1="23" x2="16" y2="23" />
+      <path className="mic-capsule" d="M12 1a3 3 0 0 0-3 3v12a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+      <path className="mic-arc" d="M19 10v2a7 7 0 0 1-14 0v-2" />
+      <line className="mic-stem" x1="12" y1="19" x2="12" y2="23" />
+      <line className="mic-base" x1="8" y1="23" x2="16" y2="23" />
     </svg>
   )
 }
@@ -112,8 +112,13 @@ export function SendIcon({ size = 20, className, ...props }: IconProps) {
       className={className}
       {...props}
     >
-      <line x1="22" y1="2" x2="11" y2="13" />
-      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+      <line className="send-trail send-trail-one" x1="4.5" y1="15.5" x2="7.5" y2="12.5" />
+      <line className="send-trail send-trail-two" x1="3.5" y1="18.2" x2="8.3" y2="13.4" />
+      <line className="send-trail send-trail-three" x1="6.5" y1="18.8" x2="9.4" y2="15.9" />
+      <g className="send-plane">
+        <line x1="22" y1="2" x2="11" y2="13" />
+        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+      </g>
     </svg>
   )
 }
@@ -258,8 +263,8 @@ export function LogOutIcon({ size = 20, className, ...props }: IconProps) {
       {...props}
     >
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <polyline points="16 17 21 12 16 7" />
-      <line x1="21" y1="12" x2="9" y2="12" />
+      <polyline className="logout-arrow-head" points="16 17 21 12 16 7" />
+      <line className="logout-arrow-line" x1="21" y1="12" x2="9" y2="12" />
     </svg>
   )
 }
