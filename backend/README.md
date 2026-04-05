@@ -65,6 +65,8 @@ The app expects:
   - Used for Gemini reasoning and itinerary explanations
 - `MAPS_API_KEY`
   - Used for Places and Routes requests
+- `CORS_ALLOW_ORIGINS`
+  - Comma-separated frontend origins allowed to call backend APIs from browser
 - `ELEVENLABS_API_KEY`
   - Used by the ElevenLabs text-to-speech helper in `app/services/elevenlabs_tts.py`
 - `ELEVENLABS_VOICE_ID`

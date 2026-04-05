@@ -4,7 +4,7 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict, SecretStr
+from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 
 class Settings(BaseModel):
@@ -40,6 +40,15 @@ class Settings(BaseModel):
     planner_request_timeout_seconds: float = 20.0
     planner_enable_google_calls: bool = True
     elevenlabs_request_timeout_seconds: float = 30.0
+    cors_allow_origins: list[str] = Field(
+        default_factory=lambda: [
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ]
+    )
+    cors_allow_methods: list[str] = Field(default_factory=lambda: ["*"])
+    cors_allow_headers: list[str] = Field(default_factory=lambda: ["*"])
+    cors_allow_credentials: bool = True
 
     @property
     def gemini_api_key_value(self) -> str | None:
@@ -123,6 +132,34 @@ class Settings(BaseModel):
                     env_file_values,
                 )
             ),
+            cors_allow_origins=_read_csv(
+                _read_value(
+                    "CORS_ALLOW_ORIGINS",
+                    "http://localhost:3000,http://127.0.0.1:3000",
+                    env_file_values,
+                )
+            ),
+            cors_allow_methods=_read_csv(
+                _read_value(
+                    "CORS_ALLOW_METHODS",
+                    "*",
+                    env_file_values,
+                )
+            ),
+            cors_allow_headers=_read_csv(
+                _read_value(
+                    "CORS_ALLOW_HEADERS",
+                    "*",
+                    env_file_values,
+                )
+            ),
+            cors_allow_credentials=_read_bool(
+                _read_value(
+                    "CORS_ALLOW_CREDENTIALS",
+                    "true",
+                    env_file_values,
+                )
+            ),
         )
 
 
@@ -139,6 +176,10 @@ def _read_secret(name: str, env_file_values: dict[str, str]) -> SecretStr | None
 
 def _read_bool(value: str) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _read_csv(value: str) -> list[str]:
+    return [item.strip() for item in value.split(",") if item.strip()]
 
 
 def _read_env_file() -> dict[str, str]:

@@ -7,6 +7,7 @@ import japanTheme from '@/images/themes/japanTheme.png'
 import { CompassIcon, LogOutIcon, MicIcon, SendIcon, UserIcon } from './Icons'
 import { ItineraryCard } from './ItineraryCard'
 import { cn } from '@/lib/utils'
+import { formatTripPlanForChat, inferTransportPreference, planTrip } from '@/lib/plannerApi'
 
 interface CenterPanelProps {
   userId: string
@@ -18,6 +19,7 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [revealedCharsByMessageId, setRevealedCharsByMessageId] = useState<Record<string, number>>({})
+  const backendPlannerEnabled = Boolean(process.env.NEXT_PUBLIC_API_URL?.trim())
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -126,13 +128,18 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
     if (useAppStore.getState().messagesForUser(userId).length === 0) {
       addMessage(userId, {
         role: 'agent',
-        content:
-          "Hi! I can look at your past trips and your friends' travel memories to craft your next plan.\n\nWhere are you thinking of traveling next?",
+        content: backendPlannerEnabled
+          ? "Hi! I am connected to the travel planner backend.\n\nTell me where you want to go, how long, and any preferences (food, pace, budget, transport)."
+          : "Hi! I can look at your past trips and your friends' travel memories to craft your next plan.\n\nWhere are you thinking of traveling next?",
         timestamp: new Date(),
       })
-      setInput('I want to go to Tokyo')
+      setInput(
+        backendPlannerEnabled
+          ? 'Plan a 1-day public transport trip from Phoenix to Tempe with coffee spots.'
+          : 'I want to go to Tokyo'
+      )
     }
-  }, [addMessage, userId])
+  }, [addMessage, backendPlannerEnabled, userId])
 
   const createRelaxedItinerary = () => ({
     destination: 'Tokyo',
@@ -535,6 +542,47 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
     return !messages.slice(originalIndex + 1).some((laterMessage) => laterMessage.role === 'user')
   })
 
+  const handleBackendPlannerMessage = async (userMessage: string) => {
+    if (!backendPlannerEnabled) {
+      return false
+    }
+
+    setTypingStatus(userId, true)
+    try {
+      const tripPlan = await planTrip({
+        prompt: userMessage,
+        language_code: 'en',
+        region_code: 'US',
+        currency_code: 'USD',
+        transport_preference: inferTransportPreference(userMessage),
+        session_id: `web-${userId}`,
+      })
+
+      addMessage(userId, {
+        role: 'agent',
+        content: formatTripPlanForChat(tripPlan),
+        timestamp: new Date(),
+      })
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Planner request failed due to an unknown error.'
+      addMessage(userId, {
+        role: 'agent',
+        content:
+          "I couldn't fetch a plan from the backend right now.\n\n" +
+          `Error: ${errorMessage}\n\n` +
+          'If this is a browser CORS issue, allow your frontend origin in backend CORS settings and retry.',
+        timestamp: new Date(),
+      })
+    } finally {
+      setTypingStatus(userId, false)
+    }
+
+    return true
+  }
+
   const handleUserMessage = async (rawMessage: string) => {
     const userMessage = rawMessage.trim()
     if (!userMessage || isLoading) return
@@ -551,6 +599,10 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
     setIsLoading(true)
 
     try {
+      if (await handleBackendPlannerMessage(userMessage)) {
+        return
+      }
+
       if (flowStep === 'awaiting-destination') {
         await runAgentResponse(
           "I am checking your previous trips and your friends' memory feed... I found one strong match: Sarah's Tokyo trip from last month with a Shibuya base and a Hakone day escape. I can build this with your own style layered on top.",
