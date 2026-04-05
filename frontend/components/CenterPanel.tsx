@@ -2,33 +2,22 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useAppStore } from '@/store/appStore'
-import type { Message } from '@/store/appStore'
+import type { Itinerary, Message, TripMemoryItem } from '@/store/appStore'
 import japanTheme from '@/images/themes/japanTheme.png'
 import { CompassIcon, LogOutIcon, MicIcon, SendIcon, UserIcon } from './Icons'
 import { ItineraryCard } from './ItineraryCard'
 import { cn } from '@/lib/utils'
 
-type FlowStep =
-  | 'awaiting-destination'
-  | 'awaiting-itinerary-request'
-  | 'awaiting-preferences'
-  | 'awaiting-preferences-custom'
-  | 'awaiting-adventure-update'
-  | 'awaiting-companion-mode'
-  | 'in-trip'
-  | 'completed'
-
 interface CenterPanelProps {
+  userId: string
   userEmail?: string
   userName?: string
 }
 
-export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
+export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) => {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [flowStep, setFlowStep] = useState<FlowStep>('awaiting-destination')
   const [revealedCharsByMessageId, setRevealedCharsByMessageId] = useState<Record<string, number>>({})
-  const [itineraryInlineAfterMessageId, setItineraryInlineAfterMessageId] = useState<string | null>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -36,14 +25,22 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
   const revealIntervalsRef = useRef<Record<string, ReturnType<typeof setInterval>>>({})
   const hasStartedCompanionFlowRef = useRef(false)
 
-  const messages = useAppStore((state) => state.messages)
-  const itinerary = useAppStore((state) => state.itinerary)
+  const ensureWorkspace = useAppStore((state) => state.ensureWorkspace)
+  const messages = useAppStore((state) => state.workspaces[userId]?.messages ?? [])
+  const itinerary = useAppStore((state) => state.workspaces[userId]?.itinerary ?? null)
+  const flowStep = useAppStore((state) => state.workspaces[userId]?.flowStep ?? 'awaiting-destination')
+  const itineraryInlineAfterMessageId = useAppStore(
+    (state) => state.workspaces[userId]?.itineraryInlineAfterMessageId ?? null
+  )
+  const isRecording = useAppStore((state) => state.workspaces[userId]?.isRecording ?? false)
   const addMessage = useAppStore((state) => state.addMessage)
   const setTypingStatus = useAppStore((state) => state.setTypingStatus)
   const updatePreference = useAppStore((state) => state.updatePreference)
   const setItinerary = useAppStore((state) => state.setItinerary)
-  const isRecording = useAppStore((state) => state.isRecording)
   const setRecording = useAppStore((state) => state.setRecording)
+  const setFlowStep = useAppStore((state) => state.setFlowStep)
+  const setItineraryInlineAfterMessageId = useAppStore((state) => state.setItineraryInlineAfterMessageId)
+  const upsertTripMemory = useAppStore((state) => state.upsertTripMemory)
 
   const isJapanDestinationText = (value: string) => {
     const normalizedValue = value.trim().toLowerCase()
@@ -76,6 +73,10 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
     new Promise((resolve) => {
       setTimeout(resolve, ms)
     })
+
+  useEffect(() => {
+    ensureWorkspace(userId)
+  }, [ensureWorkspace, userId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -122,8 +123,8 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
     if (hasSeededInitialMessageRef.current) return
     hasSeededInitialMessageRef.current = true
 
-    if (useAppStore.getState().messages.length === 0) {
-      addMessage({
+    if (useAppStore.getState().messagesForUser(userId).length === 0) {
+      addMessage(userId, {
         role: 'agent',
         content:
           "Hi! I can look at your past trips and your friends' travel memories to craft your next plan.\n\nWhere are you thinking of traveling next?",
@@ -131,7 +132,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
       })
       setInput('I want to go to Tokyo')
     }
-  }, [addMessage])
+  }, [addMessage, userId])
 
   const createRelaxedItinerary = () => ({
     destination: 'Tokyo',
@@ -406,6 +407,10 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
       'https://images.unsplash.com/photo-1513407030348-c983a97b98d8?w=1600&h=1000&fit=crop',
   })
 
+  const saveTripMemory = (memory: TripMemoryItem) => {
+    upsertTripMemory(userId, memory)
+  }
+
   const runAgentResponse = async (
     content: string,
     waitMs = 2200,
@@ -414,14 +419,14 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
     nextQuestion?: string,
     suggestedInput?: string
   ) => {
-    setTypingStatus(true)
+    setTypingStatus(userId, true)
     await sleep(waitMs)
-    setTypingStatus(false)
+    setTypingStatus(userId, false)
 
     const contentWithQuestion = `${content}\n\n${nextQuestion ?? 'How would you like to continue?'}`
 
     const messageId = `msg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-    addMessage({
+    addMessage(userId, {
       id: messageId,
       role: 'agent',
       content: contentWithQuestion,
@@ -461,35 +466,47 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
       'Want to review the updated in-trip itinerary?'
     )
 
-    setItinerary(createWeatherAdjustedItinerary())
-    setItineraryInlineAfterMessageId(proactiveMessageId)
-    setFlowStep('completed')
+    const adjustedItinerary = createWeatherAdjustedItinerary()
+    setItinerary(userId, adjustedItinerary)
+    setItineraryInlineAfterMessageId(userId, proactiveMessageId)
+    saveTripMemory({
+      id: 'my-tokyo-live-trip',
+      destination: adjustedItinerary.destination,
+      country: adjustedItinerary.country,
+      date: 'Oct 12 - Oct 16',
+      year: '2026',
+      status: 'Ongoing',
+      source: 'mine',
+      summary: 'The agent is actively adjusting the Tokyo trip as weather and pace change.',
+      image: '/images/posters/japan.png',
+    })
+    setFlowStep(userId, 'completed')
   }
 
   const applyPresetPreferences = (preset: 'balanced' | 'luxury' | 'budget') => {
     if (preset === 'balanced') {
-      updatePreference('budget', '$$ (Mid-range)')
-      updatePreference('vibe', 'Relaxed')
-      updatePreference('pace', 'Balanced')
-      updatePreference('dietary', 'Vegetarian friendly')
-      updatePreference('stay', 'Boutique hotels')
+      updatePreference(userId, 'budget', '$$ (Mid-range)')
+      updatePreference(userId, 'vibe', 'Relaxed')
+      updatePreference(userId, 'pace', 'Balanced')
+      updatePreference(userId, 'dietary', 'Vegetarian friendly')
+      updatePreference(userId, 'stay', 'Boutique hotels')
       return
     }
 
     if (preset === 'luxury') {
-      updatePreference('budget', '$$$ (Luxury)')
-      updatePreference('vibe', 'Calm premium')
-      updatePreference('pace', 'Relaxed')
-      updatePreference('dietary', 'Fine dining')
-      updatePreference('stay', 'Luxury hotels')
+      updatePreference(userId, 'budget', '$$$ (Luxury)')
+      updatePreference(userId, 'vibe', 'Calm premium')
+      updatePreference(userId, 'pace', 'Relaxed')
+      updatePreference(userId, 'dietary', 'Fine dining')
+      updatePreference(userId, 'stay', 'Luxury hotels')
       return
     }
 
-    updatePreference('budget', '$ (Budget)')
-    updatePreference('vibe', 'Flexible')
-    updatePreference('pace', 'Fast-paced')
-    updatePreference('dietary', 'Street-food friendly')
-    updatePreference('stay', 'Hostels')
+    updatePreference(userId, 'budget', '$ (Budget)')
+    updatePreference(userId, 'vibe', 'Flexible')
+    updatePreference(userId, 'pace', 'Fast-paced')
+    updatePreference(userId, 'dietary', 'Street-food friendly')
+    updatePreference(userId, 'stay', 'Hostels')
   }
 
   const getVisibleAgentContent = (message: Message) => {
@@ -524,7 +541,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
 
     const userMessageLower = userMessage.toLowerCase()
 
-    addMessage({
+    addMessage(userId, {
       role: 'user',
       content: userMessage,
       timestamp: new Date(),
@@ -543,7 +560,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           'Should I build a full itinerary from this trip memory?',
           'ok create iternary'
         )
-        setFlowStep('awaiting-itinerary-request')
+        setFlowStep(userId, 'awaiting-itinerary-request')
         return
       }
 
@@ -566,7 +583,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           'Which preference pack should I use for your first draft?',
           '$$ Mid-range | Boutique stays | Balanced pace'
         )
-        setFlowStep('awaiting-preferences')
+        setFlowStep(userId, 'awaiting-preferences')
         return
       }
 
@@ -580,7 +597,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
             'Can you share your preferences in one line so I can personalize the plan?',
             'Budget: $$, Stay: boutique, Dietary: vegetarian, Pace: balanced'
           )
-          setFlowStep('awaiting-preferences-custom')
+          setFlowStep(userId, 'awaiting-preferences-custom')
           return
         }
 
@@ -600,8 +617,20 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           'Want me to switch this to a more adventurous version?',
           'i want this trip to be adventurous',
         )
-        setItinerary(createRelaxedItinerary())
-        setItineraryInlineAfterMessageId(itineraryMessageId)
+        const relaxedItinerary = createRelaxedItinerary()
+        setItinerary(userId, relaxedItinerary)
+        setItineraryInlineAfterMessageId(userId, itineraryMessageId)
+        saveTripMemory({
+          id: 'my-tokyo-draft',
+          destination: relaxedItinerary.destination,
+          country: relaxedItinerary.country,
+          date: 'Oct 12 - Oct 16',
+          year: '2026',
+          status: 'Ongoing',
+          source: 'mine',
+          summary: "First Tokyo draft based on Sarah's memory, boutique stays, and a balanced pace.",
+          image: '/images/posters/japan.png',
+        })
         await runAgentResponse(
           "Done. Here is your full itinerary. If you want a higher-energy plan, say: i want this trip to be adventurous.",
           1800,
@@ -610,7 +639,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           'Should I rework this into an adventurous itinerary?',
           'i want this trip to be adventurous'
         )
-        setFlowStep('awaiting-adventure-update')
+        setFlowStep(userId, 'awaiting-adventure-update')
         return
       }
 
@@ -625,13 +654,17 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           applyPresetPreferences('balanced')
         }
 
+        let customItinerary: Itinerary
+
         if (customText.includes('adventurous') || customText.includes('adventure')) {
-          updatePreference('vibe', 'Adventurous')
-          updatePreference('pace', 'Fast-paced')
-          setItinerary(createAdventureItinerary())
+          updatePreference(userId, 'vibe', 'Adventurous')
+          updatePreference(userId, 'pace', 'Fast-paced')
+          customItinerary = createAdventureItinerary()
         } else {
-          setItinerary(createRelaxedItinerary())
+          customItinerary = createRelaxedItinerary()
         }
+
+        setItinerary(userId, customItinerary)
 
         const itineraryMessageId = await runAgentResponse(
           'Thanks. I generated your itinerary based on your custom inputs.',
@@ -641,7 +674,18 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           'Would you like me to make this more adventurous?',
           'i want this trip to be adventurous',
         )
-        setItineraryInlineAfterMessageId(itineraryMessageId)
+        setItineraryInlineAfterMessageId(userId, itineraryMessageId)
+        saveTripMemory({
+          id: 'my-tokyo-draft',
+          destination: customItinerary.destination,
+          country: customItinerary.country,
+          date: 'Oct 12 - Oct 16',
+          year: '2026',
+          status: 'Ongoing',
+          source: 'mine',
+          summary: 'Custom Tokyo draft built from your stated budget, stay style, dietary needs, and pace.',
+          image: '/images/posters/japan.png',
+        })
         await runAgentResponse(
           "If you want me to shift it further, tell me. For the guided flow, next say: i want this trip to be adventurous.",
           1500,
@@ -650,7 +694,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           'Do you want me to regenerate this with an adventurous style?',
           'i want this trip to be adventurous'
         )
-        setFlowStep('awaiting-adventure-update')
+        setFlowStep(userId, 'awaiting-adventure-update')
         return
       }
 
@@ -666,11 +710,23 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           'If this looks right, do you want me to stay with you throughout the trip and keep adjusting things in real time?',
           'yes, stay with me on the trip',
         )
-        updatePreference('vibe', 'Adventurous')
-        updatePreference('pace', 'Fast-paced')
-        updatePreference('group', 'Solo explorer')
-        setItinerary(createAdventureItinerary())
-        setItineraryInlineAfterMessageId(itineraryMessageId)
+        const adventurousItinerary = createAdventureItinerary()
+        updatePreference(userId, 'vibe', 'Adventurous')
+        updatePreference(userId, 'pace', 'Fast-paced')
+        updatePreference(userId, 'group', 'Solo explorer')
+        setItinerary(userId, adventurousItinerary)
+        setItineraryInlineAfterMessageId(userId, itineraryMessageId)
+        saveTripMemory({
+          id: 'my-tokyo-draft',
+          destination: adventurousItinerary.destination,
+          country: adventurousItinerary.country,
+          date: 'Oct 12 - Oct 16',
+          year: '2026',
+          status: 'Ongoing',
+          source: 'mine',
+          summary: 'Tokyo was re-optimized for a more adventurous pace with surf, neon walks, and faster movement.',
+          image: '/images/posters/japan.png',
+        })
         await runAgentResponse(
           'Updated adventurous itinerary is ready. Is this final plan okay?',
           1800,
@@ -679,7 +735,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           'Should I stay active during the trip and proactively help as things change?',
           'yes, stay with me on the trip'
         )
-        setFlowStep('awaiting-companion-mode')
+        setFlowStep(userId, 'awaiting-companion-mode')
         return
       }
 
@@ -689,7 +745,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
           userMessageLower.includes('stay with me') ||
           userMessageLower.includes('yes'))
       ) {
-        setFlowStep('in-trip')
+        setFlowStep(userId, 'in-trip')
         void startCompanionFlow()
         return
       }
@@ -713,13 +769,13 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
 
   const handleOptionClick = async (option: string) => {
     if (option === 'Other' && flowStep === 'awaiting-preferences') {
-      addMessage({
+      addMessage(userId, {
         role: 'agent',
         content:
           'Perfect. Share budget, stay style, dietary needs, and preferred pace in one message.\n\nCan you share your preferences in one line so I can personalize the plan?',
         timestamp: new Date(),
       })
-      setFlowStep('awaiting-preferences-custom')
+      setFlowStep(userId, 'awaiting-preferences-custom')
       setInput('Budget: $$, Stay: boutique, Dietary: vegetarian, Pace: balanced')
       setTimeout(() => inputRef.current?.focus(), 0)
       return
@@ -729,7 +785,7 @@ export const CenterPanel = ({ userEmail, userName }: CenterPanelProps) => {
   }
 
   const handleMicToggle = () => {
-    setRecording(!isRecording)
+    setRecording(userId, !isRecording)
   }
 
   return (

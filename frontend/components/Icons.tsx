@@ -1,6 +1,7 @@
 'use client'
 
 import type React from 'react'
+import { Brain as LucideBrain } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
@@ -126,21 +127,7 @@ export function SendIcon({ size = 20, className, ...props }: IconProps) {
 // Brain icon for Trip Memory
 export function BrainIcon({ size = 20, className, ...props }: IconProps) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      {...props}
-    >
-      <path d="M12 5a3 3 0 1 0-5.997.125A4 4 0 0 0 6.732 9.15A4 4 0 0 0 9 9.5a4.5 4.5 0 1 0 9-4.5A4.5 4.5 0 0 0 12 5" />
-      <path d="M8 14a6 6 0 1 1 8 0" />
-    </svg>
+    <LucideBrain size={size} className={className} {...props} />
   )
 }
 

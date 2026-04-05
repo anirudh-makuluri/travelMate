@@ -1,11 +1,21 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useAppStore } from '@/store/appStore'
 import { SparkleIcon } from './Icons'
 import { cn } from '@/lib/utils'
 
-export const LeftPanel = () => {
-  const preferences = useAppStore((state) => state.preferences)
+interface LeftPanelProps {
+  userId: string
+}
+
+export const LeftPanel = ({ userId }: LeftPanelProps) => {
+  const ensureWorkspace = useAppStore((state) => state.ensureWorkspace)
+  const preferences = useAppStore((state) => state.workspaces[userId]?.preferences ?? [])
+
+  useEffect(() => {
+    ensureWorkspace(userId)
+  }, [ensureWorkspace, userId])
 
   return (
     <div className="fixed left-0 top-0 h-screen w-[220px] border-r border-white/60 bg-gradient-to-b from-[#f8f4ee] via-[#f7f4ef] to-[#f3efe8] p-6 flex flex-col overflow-y-auto shadow-[inset_-1px_0_0_rgba(255,255,255,0.7)]">

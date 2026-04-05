@@ -1,4 +1,5 @@
 import { AuthScreen } from '@/components/AuthScreen'
+import { Auth0MetadataSync } from '@/components/Auth0MetadataSync'
 import { LeftPanel } from '@/components/LeftPanel'
 import { CenterPanel } from '@/components/CenterPanel'
 import { RightPanel } from '@/components/RightPanel'
@@ -11,11 +12,14 @@ export default async function Home() {
     return <AuthScreen />
   }
 
+  const userId = session.user.sub ?? session.user.email ?? 'traveler'
+
   return (
     <main className="w-full h-screen overflow-hidden bg-warm-white">
-      <LeftPanel />
-      <CenterPanel userEmail={session.user.email} userName={session.user.name} />
-      <RightPanel />
+      <Auth0MetadataSync userId={userId} />
+      <LeftPanel userId={userId} />
+      <CenterPanel userId={userId} userEmail={session.user.email} userName={session.user.name} />
+      <RightPanel userId={userId} />
     </main>
   )
 }
