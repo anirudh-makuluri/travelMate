@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState } from 'react'
 import { ArrowRightIcon } from '@/components/Icons'
 import { cn, formatDate } from '@/lib/utils'
 
@@ -219,7 +220,7 @@ export const BlogPostPage = ({ params }: { params: { id: string } }) => {
           </h3>
           <p className="text-text-secondary mb-8 max-w-xl mx-auto">
             TripMind can recreate this Tokyo itinerary or tailor a new journey
-            just for you. Let's get planning.
+            just for you. Let&apos;s get planning.
           </p>
           <Link
             href="/"
@@ -242,5 +243,3 @@ export const BlogPostPage = ({ params }: { params: { id: string } }) => {
     </div>
   )
 }
-
-import { useState } from 'react'

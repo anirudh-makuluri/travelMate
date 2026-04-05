@@ -67,6 +67,7 @@ interface AppStore {
   // UI State
   isRecording: boolean
   setRecording: (recording: boolean) => void
+  resetApp: () => void
 }
 
 const initialPreferences: Preference[] = [
@@ -130,4 +131,12 @@ export const useAppStore = create<AppStore>((set) => ({
   
   isRecording: false,
   setRecording: (recording: boolean) => set({ isRecording: recording }),
+
+  resetApp: () =>
+    set({
+      preferences: initialPreferences.map((preference) => ({ ...preference, updated: false })),
+      messages: [],
+      itinerary: null,
+      isRecording: false,
+    }),
 }))
