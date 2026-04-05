@@ -46,3 +46,17 @@ def test_normalize_planning_payload_coerces_soft_preference_weights() -> None:
     assert normalized["soft_preferences"][2]["weight"] == 0.3
     assert normalized["soft_preferences"][3]["weight"] == 0.72
     assert normalized["soft_preferences"][4]["weight"] == 0.5
+
+
+def test_normalize_planning_payload_fills_missing_destination_fields() -> None:
+    client = GeminiClient(http_client=httpx.AsyncClient(), settings=Settings())
+    payload = {
+        "raw_request": "Build me a weekend food trip with a moderate budget.",
+        "destination": {"value": None, "source": "unknown"},
+    }
+
+    normalized = client._normalize_planning_payload(payload)
+
+    assert normalized["destination"]["value"] == "Unknown destination"
+    assert normalized["destination"]["source"] == "default"
+    assert normalized["destination"]["confidence"] == 0.2

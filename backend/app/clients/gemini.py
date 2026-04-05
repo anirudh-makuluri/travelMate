@@ -274,6 +274,26 @@ Requirements:
     def _normalize_planning_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
         payload = dict(payload)
 
+        destination = payload.get("destination")
+        if not isinstance(destination, dict):
+            destination = {}
+        destination_value = destination.get("value")
+        normalized_destination_value = (
+            destination_value.strip()
+            if isinstance(destination_value, str) and destination_value.strip()
+            else "Unknown destination"
+        )
+        destination["value"] = normalized_destination_value
+        destination["confidence"] = self._normalize_destination_confidence(
+            destination.get("confidence"),
+            has_known_destination=normalized_destination_value.lower() != "unknown destination",
+        )
+        destination["source"] = self._normalize_constraint_source(
+            destination.get("source"),
+            fallback="inferred" if normalized_destination_value.lower() != "unknown destination" else "default",
+        )
+        payload["destination"] = destination
+
         for constraint in payload.get("hard_constraints", []) or []:
             if not isinstance(constraint, dict):
                 continue
@@ -292,6 +312,31 @@ Requirements:
             )
 
         return payload
+
+    def _normalize_constraint_source(self, raw_value: Any, *, fallback: str) -> str:
+        if isinstance(raw_value, str):
+            normalized = raw_value.strip().lower()
+            if normalized in {"user", "inferred", "default"}:
+                return normalized
+            if normalized in {"unknown", "unspecified", "missing", "none", "null"}:
+                return fallback
+        return fallback
+
+    def _normalize_destination_confidence(
+        self,
+        raw_value: Any,
+        *,
+        has_known_destination: bool,
+    ) -> float:
+        fallback = 0.65 if has_known_destination else 0.2
+        if isinstance(raw_value, (int, float)):
+            return self._clamp_weight(float(raw_value))
+        if isinstance(raw_value, str):
+            try:
+                return self._clamp_weight(float(raw_value.strip()))
+            except ValueError:
+                return fallback
+        return fallback
 
     def _normalize_strength(self, raw_strength: str) -> str:
         mapping = {
@@ -426,9 +471,7 @@ Requirements:
                 )
             )
 
-        assumptions = [
-            "yo code trash not work"
-        ]
+        assumptions: list[str] = []
         if duration_days is None:
             assumptions.append(
                 f"Used a default {default_days}-day planning window because duration was not explicit."

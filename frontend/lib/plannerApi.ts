@@ -152,9 +152,122 @@ export interface CalendarExportResult {
   openedCount: number
 }
 
+type MockDestinationKey = 'vegas' | 'japan'
+
 const PLANNER_PROXY_PATH = '/api/planner/plan'
 
 const DAY_ACTIVITY_TIMES = ['09:00', '11:30', '14:30', '17:30', '20:00']
+
+const MOCK_DESTINATIONS: Record<
+  MockDestinationKey,
+  {
+    destination: string
+    country: string
+    regionCode: string
+    candidateNames: string[]
+    itinerary: Array<{
+      theme: string
+      stops: Array<{ name: string; rationale: string; address: string }>
+    }>
+  }
+> = {
+  vegas: {
+    destination: 'Las Vegas',
+    country: 'USA',
+    regionCode: 'US',
+    candidateNames: ['Bellagio Fountains', 'The Venetian', 'AREA15', 'Fremont Street Experience'],
+    itinerary: [
+      {
+        theme: 'Las Vegas Strip Highlights',
+        stops: [
+          {
+            name: 'Bellagio Conservatory & Fountains',
+            rationale: 'A polished first stop with classic Vegas energy and easy photo moments.',
+            address: '3600 S Las Vegas Blvd, Las Vegas, NV',
+          },
+          {
+            name: 'Eataly Las Vegas',
+            rationale: 'A food-forward lunch stop that fits a presentation-friendly weekend itinerary.',
+            address: '3770 S Las Vegas Blvd, Las Vegas, NV',
+          },
+          {
+            name: 'The Venetian Grand Canal',
+            rationale: 'Keeps the pace relaxed while still feeling iconic and high-energy.',
+            address: '3355 S Las Vegas Blvd, Las Vegas, NV',
+          },
+        ],
+      },
+      {
+        theme: 'Downtown and Entertainment',
+        stops: [
+          {
+            name: 'Bouchon Bakery',
+            rationale: 'An easy brunch start with a recognizable food stop.',
+            address: '3355 S Las Vegas Blvd, Las Vegas, NV',
+          },
+          {
+            name: 'AREA15',
+            rationale: 'Adds a modern immersive venue to keep the plan visually exciting.',
+            address: '3215 S Rancho Dr, Las Vegas, NV',
+          },
+          {
+            name: 'Fremont Street Experience',
+            rationale: 'Wraps the trip with a different side of Vegas and strong evening energy.',
+            address: '425 Fremont St, Las Vegas, NV',
+          },
+        ],
+      },
+    ],
+  },
+  japan: {
+    destination: 'Tokyo',
+    country: 'Japan',
+    regionCode: 'JP',
+    candidateNames: ['Senso-ji Temple', 'Tsukiji Outer Market', 'Shibuya Crossing', 'Meiji Shrine'],
+    itinerary: [
+      {
+        theme: 'Tokyo Classics',
+        stops: [
+          {
+            name: 'Senso-ji Temple',
+            rationale: 'A strong cultural anchor that makes the trip feel unmistakably Tokyo.',
+            address: '2 Chome-3-1 Asakusa, Taito City, Tokyo',
+          },
+          {
+            name: 'Tsukiji Outer Market',
+            rationale: 'Gives the itinerary an easy food focus with crowd-pleasing variety.',
+            address: '4 Chome-16-2 Tsukiji, Chuo City, Tokyo',
+          },
+          {
+            name: 'Shibuya Crossing',
+            rationale: 'Adds the high-energy city moment people expect from a Japan trip.',
+            address: '2 Chome-2-1 Dogenzaka, Shibuya City, Tokyo',
+          },
+        ],
+      },
+      {
+        theme: 'Shrines and Neighborhoods',
+        stops: [
+          {
+            name: 'Meiji Shrine',
+            rationale: 'Balances the trip with a calmer stop and a clear change of pace.',
+            address: '1-1 Yoyogikamizonocho, Shibuya City, Tokyo',
+          },
+          {
+            name: 'Harajuku Food Street',
+            rationale: 'Keeps the food thread going with casual snacks and street energy.',
+            address: '1 Chome Jingumae, Shibuya City, Tokyo',
+          },
+          {
+            name: 'Tokyo Metropolitan Government Building',
+            rationale: 'Ends with a simple skyline viewpoint that works well in a weekend draft.',
+            address: '2 Chome-8-1 Nishishinjuku, Shinjuku City, Tokyo',
+          },
+        ],
+      },
+    ],
+  },
+}
 
 const PREFERENCE_ICONS: Record<string, string> = {
   budget: '💰',
@@ -227,6 +340,221 @@ const addDays = (isoDate: string, daysToAdd: number): string => {
   const date = new Date(isoDate)
   date.setDate(date.getDate() + daysToAdd)
   return date.toISOString()
+}
+
+const inferRequestedDayCount = (prompt: string): number => {
+  const lower = prompt.toLowerCase()
+  const explicitMatch = lower.match(/\b(\d+)\s*-\s*day\b|\b(\d+)\s+days?\b/)
+  const parsedExplicit = explicitMatch ? Number(explicitMatch[1] || explicitMatch[2]) : null
+
+  if (parsedExplicit && !Number.isNaN(parsedExplicit)) {
+    return Math.max(1, Math.min(parsedExplicit, 5))
+  }
+  if (lower.includes('weekend')) {
+    return 2
+  }
+  return 2
+}
+
+const inferOriginFromPrompt = (prompt: string): string | null => {
+  const match = prompt.match(
+    /\bfrom\s+([A-Za-z][A-Za-z\s.,'-]+?)(?:\s+\b(?:to|in|for|with|under|within|on)\b|[.!?,]|$)/i
+  )
+
+  return match?.[1]?.trim() || null
+}
+
+const inferMockDestinationKey = (prompt: string): MockDestinationKey | null => {
+  const lower = prompt.toLowerCase()
+
+  if (
+    ['tokyo', 'japan', 'kyoto', 'osaka', 'shibuya', 'hakone'].some((term) => lower.includes(term))
+  ) {
+    return 'japan'
+  }
+
+  if (['vegas', 'las vegas', 'nevada strip'].some((term) => lower.includes(term))) {
+    return 'vegas'
+  }
+
+  return null
+}
+
+const buildFallbackPlanningState = (
+  payload: TravelPlanningRequest,
+  destinationKey: MockDestinationKey | null,
+  origin: string | null,
+  requestedDays: number
+): PlanningState => {
+  const destinationConfig = destinationKey ? MOCK_DESTINATIONS[destinationKey] : null
+
+  return {
+    destination: {
+      value: destinationConfig?.destination || 'Unknown destination',
+    },
+    duration: {
+      selected_days: destinationConfig ? requestedDays : null,
+      min_days: destinationConfig ? requestedDays : null,
+      max_days: destinationConfig ? requestedDays : null,
+    },
+    budget: {
+      currency_code: payload.currency_code,
+      level: payload.prompt.toLowerCase().includes('luxury')
+        ? 'luxury'
+        : payload.prompt.toLowerCase().includes('moderate')
+          ? 'moderate'
+          : payload.prompt.toLowerCase().includes('budget')
+            ? 'low'
+            : 'moderate',
+      hard_cap: false,
+    },
+    party: {
+      adults: 1,
+      children: 0,
+    },
+    transport_preference: payload.transport_preference,
+    unknowns: [
+      ...(destinationConfig ? [] : ['destination']),
+      ...(destinationConfig && !origin ? ['origin'] : []),
+    ],
+    assumptions: ['Using a presentation fallback while the live planner is unavailable.'],
+    language_code: payload.language_code,
+    region_code: destinationConfig?.regionCode || payload.region_code,
+    currency_code: payload.currency_code,
+  }
+}
+
+const buildMockDayPlan = (
+  destinationKey: MockDestinationKey,
+  requestedDays: number
+): DayPlan[] => {
+  const config = MOCK_DESTINATIONS[destinationKey]
+
+  return Array.from({ length: requestedDays }, (_, index) => {
+    const template = config.itinerary[index % config.itinerary.length]
+    return {
+      day_number: index + 1,
+      theme: template.theme,
+      stops: template.stops.map((stop, stopIndex) => ({
+        order: stopIndex + 1,
+        place: {
+          name: stop.name,
+          address: stop.address,
+        },
+        rationale: stop.rationale,
+        travel_from_previous:
+          stopIndex === 0
+            ? null
+            : {
+                mode: destinationKey === 'japan' ? 'transit' : 'drive',
+                duration_minutes: 20 + stopIndex * 10,
+              },
+      })),
+    }
+  })
+}
+
+const buildPresentationFallbackPlan = (payload: TravelPlanningRequest): TripPlanResponse => {
+  const destinationKey = inferMockDestinationKey(payload.prompt)
+  const origin = inferOriginFromPrompt(payload.prompt)
+  const requestedDays = inferRequestedDayCount(payload.prompt)
+  const planningState = buildFallbackPlanningState(payload, destinationKey, origin, requestedDays)
+
+  if (!destinationKey) {
+    return {
+      session_id: payload.session_id,
+      completeness: {
+        status: 'incomplete',
+        reason: 'Destination is missing. Share the city/region/country to plan for.',
+        missing_information: ['destination'],
+        follow_up_question: 'Destination is missing. Share the city/region/country to plan for.',
+      },
+      feasibility: {
+        status: 'needs_more_info',
+        reason: 'A destination is required before a mock itinerary can be drafted.',
+        missing_information: ['destination'],
+        follow_up_question: 'Destination is missing. Share the city/region/country to plan for.',
+      },
+      follow_up_question: 'Destination is missing. Share the city/region/country to plan for.',
+      planning_state: planningState,
+      explanation: 'Tell me the destination and I can keep the presentation moving with a quick draft.',
+      warnings: ['Using a presentation fallback because the live planner is unavailable right now.'],
+      itinerary: [],
+      candidates: [],
+      budget: {
+        estimated_total: null,
+        currency_code: payload.currency_code,
+        confidence: 'low',
+      },
+      metadata: {
+        itinerary_generated_at: new Date().toISOString(),
+      },
+    }
+  }
+
+  if (!origin) {
+    return {
+      session_id: payload.session_id,
+      completeness: {
+        status: 'incomplete',
+        reason: 'Origin is missing. Share where you will start your trip from.',
+        missing_information: ['origin'],
+        follow_up_question: 'Origin is missing. Share where you will start your trip from.',
+      },
+      feasibility: {
+        status: 'needs_more_info',
+        reason: 'An origin helps frame the route before we generate the mock itinerary.',
+        missing_information: ['origin'],
+        follow_up_question: 'Origin is missing. Share where you will start your trip from.',
+      },
+      follow_up_question: 'Origin is missing. Share where you will start your trip from.',
+      planning_state: planningState,
+      explanation: 'Once you share the starting point, I can draft the fallback itinerary.',
+      warnings: ['Using a presentation fallback because the live planner is unavailable right now.'],
+      itinerary: [],
+      candidates: MOCK_DESTINATIONS[destinationKey].candidateNames.map((name) => ({ name })),
+      budget: {
+        estimated_total: destinationKey === 'japan' ? 1800 : 420,
+        currency_code: payload.currency_code,
+        confidence: 'medium',
+      },
+      metadata: {
+        itinerary_generated_at: new Date().toISOString(),
+      },
+    }
+  }
+
+  const destinationConfig = MOCK_DESTINATIONS[destinationKey]
+
+  return {
+    session_id: payload.session_id,
+    completeness: {
+      status: 'complete',
+      reason: 'Using a presentation-safe fallback itinerary.',
+      missing_information: [],
+      follow_up_question: null,
+    },
+    feasibility: {
+      status: 'feasible',
+      reason: 'A mock itinerary was created from the available origin and destination.',
+      missing_information: [],
+      follow_up_question: null,
+    },
+    follow_up_question: null,
+    planning_state: planningState,
+    explanation: `I put together a quick ${requestedDays}-day fallback plan from ${origin} to ${destinationConfig.destination}.`,
+    warnings: ['Using a presentation fallback because the live planner is unavailable right now.'],
+    itinerary: buildMockDayPlan(destinationKey, requestedDays),
+    candidates: destinationConfig.candidateNames.map((name) => ({ name })),
+    budget: {
+      estimated_total: destinationKey === 'japan' ? 1800 + Math.max(requestedDays - 2, 0) * 300 : 420 + Math.max(requestedDays - 2, 0) * 120,
+      currency_code: payload.currency_code,
+      confidence: 'medium',
+    },
+    metadata: {
+      itinerary_generated_at: new Date().toISOString(),
+    },
+  }
 }
 
 const WEATHER_OPTIONS: MockForecast[] = [
@@ -569,25 +897,28 @@ export const inferTransportPreference = (prompt: string): TransportPreference =>
 }
 
 export const planTrip = async (payload: TravelPlanningRequest): Promise<TripPlanResponse> => {
-  const response = await fetch(PLANNER_PROXY_PATH, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  })
+  try {
+    const response = await fetch(PLANNER_PROXY_PATH, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
 
-  const body = (await response.json().catch(() => ({}))) as {
-    detail?: string
-    message?: string
-  } & Partial<TripPlanResponse>
+    const body = (await response.json().catch(() => ({}))) as {
+      detail?: string
+      message?: string
+    } & Partial<TripPlanResponse>
 
-  if (!response.ok) {
-    const errorMessage = body.detail || body.message || `Planner API failed with HTTP ${response.status}.`
-    throw new Error(errorMessage)
+    if (!response.ok) {
+      return buildPresentationFallbackPlan(payload)
+    }
+
+    return body as TripPlanResponse
+  } catch {
+    return buildPresentationFallbackPlan(payload)
   }
-
-  return body as TripPlanResponse
 }
 
 const formatStops = (day: DayPlan): string[] => {
@@ -657,10 +988,6 @@ export const getFollowUpOptions = (plan: TripPlanResponse): string[] => {
   const question = plan.follow_up_question?.toLowerCase() || ''
   const missing = new Set(plan.completeness.missing_information)
 
-  if (!question) {
-    return []
-  }
-
   if (question.includes('increase the budget cap') || question.includes('budget as a soft preference')) {
     return ['Increase budget cap', 'Reduce trip days', 'Keep budget flexible']
   }
@@ -670,7 +997,7 @@ export const getFollowUpOptions = (plan: TripPlanResponse): string[] => {
   }
 
   if (missing.has('destination')) {
-    return ['Las Vegas, NV', 'Vermont', 'Other']
+    return ['Tokyo, Japan', 'Las Vegas, NV', 'Other']
   }
 
   if (missing.has('origin')) {
@@ -681,5 +1008,13 @@ export const getFollowUpOptions = (plan: TripPlanResponse): string[] => {
     return ['Full itinerary plan', 'Quick travel answer']
   }
 
-  return []
+  if (plan.itinerary.length > 0) {
+    return ['Make it cheaper', 'Add food spots', 'Change the pace']
+  }
+
+  if (plan.candidates.length > 0) {
+    return ['Build the itinerary', 'Show more options', 'Add a budget cap']
+  }
+
+  return ['Weekend trip ideas', 'Food-focused plan', 'Quick day trip']
 }
