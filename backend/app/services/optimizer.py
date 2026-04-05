@@ -193,6 +193,19 @@ class ItineraryOptimizer:
         estimated_cost = max(30.0, distance_km * 0.12)
         return round(estimated_cost, 2), "arrival transfer"
 
+    def _haversine_distance(self, a: PlaceLocation, b: PlaceLocation) -> float:
+        radius_meters = 6_371_000
+        lat1 = math.radians(a.lat)
+        lat2 = math.radians(b.lat)
+        delta_lat = math.radians(b.lat - a.lat)
+        delta_lng = math.radians(b.lng - a.lng)
+
+        haversine = (
+            math.sin(delta_lat / 2) ** 2
+            + math.cos(lat1) * math.cos(lat2) * math.sin(delta_lng / 2) ** 2
+        )
+        return 2 * radius_meters * math.asin(math.sqrt(haversine))
+
     def _score_candidate(
         self,
         planning_state: PlanningState,
