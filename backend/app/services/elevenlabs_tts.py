@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Final
 
 import httpx
@@ -134,6 +134,28 @@ async def elevenlabsSTT(audio_path: str | Path) -> str:
     if not source_path.exists():
         raise FileNotFoundError(f"Audio file not found: {source_path}")
 
+    return await elevenlabsSTTBytes(
+        audio_bytes=source_path.read_bytes(),
+        filename=source_path.name,
+        content_type=_mime_type_for_audio(source_path),
+    )
+
+
+async def elevenlabsSTTBytes(
+    *,
+    audio_bytes: bytes,
+    filename: str = "recording.webm",
+    content_type: str = "audio/webm",
+) -> str:
+    settings = get_settings()
+    api_key = settings.elevenlabs_api_key_value
+    if not api_key:
+        raise ValueError(
+            "ELEVENLABS_API_KEY is not configured. Add it to your .env file before calling elevenlabsSTTBytes()."
+        )
+    if not audio_bytes:
+        raise ValueError("Audio payload is empty.")
+
     url = f"{settings.elevenlabs_base_url}/speech-to-text"
     headers = {
         "xi-api-key": api_key,
@@ -141,9 +163,9 @@ async def elevenlabsSTT(audio_path: str | Path) -> str:
     }
     files = {
         "file": (
-            source_path.name,
-            source_path.read_bytes(),
-            _mime_type_for_audio(source_path),
+            filename,
+            audio_bytes,
+            content_type,
         ),
     }
     data = {"model_id": settings.elevenlabs_stt_model_id}

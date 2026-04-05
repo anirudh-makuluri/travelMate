@@ -16,14 +16,6 @@ import {
   planTrip,
 } from '@/lib/plannerApi'
 
-type SttRealtimeEvent = {
-  message_type?: string
-  text?: string
-  detail?: string
-}
-
-const TARGET_STT_SAMPLE_RATE = 16000
-
 interface CenterPanelProps {
   userId: string
   userEmail?: string
@@ -113,17 +105,10 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
   const hasSeededInitialMessageRef = useRef(false)
   const revealIntervalsRef = useRef<Record<string, ReturnType<typeof setInterval>>>({})
   const shouldAutoScrollRef = useRef(true)
-  const sttSocketRef = useRef<WebSocket | null>(null)
   const mediaStreamRef = useRef<MediaStream | null>(null)
-  const audioContextRef = useRef<AudioContext | null>(null)
-  const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null)
-  const processorNodeRef = useRef<ScriptProcessorNode | null>(null)
-  const sttPartialTextRef = useRef<string>('')
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const recordedChunksRef = useRef<Blob[]>([])
   const inputBeforeSttRef = useRef<string>('')
-  const sttChunkCountRef = useRef(0)
-  const sttLastChunkLogAtRef = useRef(0)
-  const sttCleanupTimeoutRef = useRef<number | null>(null)
-  const sttSourceSampleRateRef = useRef(TARGET_STT_SAMPLE_RATE)
 
   const ensureWorkspace = useAppStore((state) => state.ensureWorkspace)
   const preferences = useAppStore((state) => state.workspaces[userId]?.preferences ?? [])
@@ -355,58 +340,6 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
     setTimeout(() => inputRef.current?.focus(), 0)
   }
 
-  const toPcm16 = (inputBuffer: Float32Array) => {
-    const output = new Int16Array(inputBuffer.length)
-    for (let i = 0; i < inputBuffer.length; i += 1) {
-      const sample = Math.max(-1, Math.min(1, inputBuffer[i]))
-      output[i] = sample < 0 ? sample * 0x8000 : sample * 0x7fff
-    }
-    return output.buffer
-  }
-
-  const downsampleToTargetRate = (inputBuffer: Float32Array, sourceSampleRate: number) => {
-    if (sourceSampleRate === TARGET_STT_SAMPLE_RATE) {
-      return inputBuffer
-    }
-
-    if (sourceSampleRate < TARGET_STT_SAMPLE_RATE) {
-      // Fallback: avoid invalid upsampling path; send raw input if source is unexpectedly lower.
-      return inputBuffer
-    }
-
-    const sampleRateRatio = sourceSampleRate / TARGET_STT_SAMPLE_RATE
-    const outputLength = Math.max(1, Math.round(inputBuffer.length / sampleRateRatio))
-    const outputBuffer = new Float32Array(outputLength)
-
-    let outputIndex = 0
-    let inputIndex = 0
-    while (outputIndex < outputLength) {
-      const nextInputIndex = Math.round((outputIndex + 1) * sampleRateRatio)
-      let accum = 0
-      let count = 0
-
-      for (let idx = inputIndex; idx < nextInputIndex && idx < inputBuffer.length; idx += 1) {
-        accum += inputBuffer[idx]
-        count += 1
-      }
-
-      outputBuffer[outputIndex] = count > 0 ? accum / count : 0
-      outputIndex += 1
-      inputIndex = nextInputIndex
-    }
-
-    return outputBuffer
-  }
-
-  const buildSttApiUrl = () => {
-    const configuredBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/'
-    const normalizedBase = configuredBase.endsWith('/')
-      ? configuredBase.slice(0, -1)
-      : configuredBase
-    const wsBase = normalizedBase.replace(/^http/i, 'ws')
-    return `${wsBase}/api/v1/stt/stream?audio_format=pcm_${TARGET_STT_SAMPLE_RATE}&sample_rate=${TARGET_STT_SAMPLE_RATE}&commit_strategy=manual`
-  }
-
   const applySttTranscriptToInput = (transcript: string) => {
     const trimmedTranscript = transcript.trim()
     if (!trimmedTranscript) {
@@ -420,30 +353,14 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
   }
 
   const cleanupSttResources = () => {
-    const hasResources =
-      !!processorNodeRef.current ||
-      !!sourceNodeRef.current ||
-      !!mediaStreamRef.current ||
-      !!audioContextRef.current ||
-      !!sttSocketRef.current
+    console.info('[STT] Cleaning up media recorder resources')
 
-    if (!hasResources) {
-      return
-    }
-
-    console.info('[STT] Cleaning up audio + websocket resources')
-
-    const processor = processorNodeRef.current
-    if (processor) {
-      processor.onaudioprocess = null
-      processor.disconnect()
-      processorNodeRef.current = null
-    }
-
-    const sourceNode = sourceNodeRef.current
-    if (sourceNode) {
-      sourceNode.disconnect()
-      sourceNodeRef.current = null
+    const recorder = mediaRecorderRef.current
+    if (recorder) {
+      recorder.ondataavailable = null
+      recorder.onstop = null
+      recorder.onerror = null
+      mediaRecorderRef.current = null
     }
 
     const stream = mediaStreamRef.current
@@ -454,205 +371,120 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
       mediaStreamRef.current = null
     }
 
-    const context = audioContextRef.current
-    if (context) {
-      void context.close()
-      audioContextRef.current = null
-    }
-
-    const socket = sttSocketRef.current
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      console.info('[STT] Closing websocket connection')
-      socket.close()
-    }
-    sttSocketRef.current = null
-    sttPartialTextRef.current = ''
-    sttChunkCountRef.current = 0
-    sttLastChunkLogAtRef.current = 0
-
-    if (sttCleanupTimeoutRef.current !== null) {
-      window.clearTimeout(sttCleanupTimeoutRef.current)
-      sttCleanupTimeoutRef.current = null
-    }
+    recordedChunksRef.current = []
   }
 
-  const startRealtimeStt = async () => {
+  const transcribeRecordedAudio = async (audioBlob: Blob) => {
+    const response = await fetch('/api/stt/transcribe', {
+      method: 'POST',
+      headers: {
+        'Content-Type': audioBlob.type || 'audio/webm',
+      },
+      body: audioBlob,
+    })
+
+    const body = (await response.json().catch(() => ({}))) as {
+      text?: string
+      detail?: string
+    }
+
+    if (!response.ok || !body.text?.trim()) {
+      throw new Error(body.detail || 'Speech-to-text failed.')
+    }
+
+    return body.text.trim()
+  }
+
+  const startRestStt = async () => {
     console.info('[STT] Requesting microphone permission')
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
     mediaStreamRef.current = stream
-    console.info('[STT] Microphone access granted', {
+    recordedChunksRef.current = []
+
+    const preferredMimeType =
+      typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported('audio/webm')
+          ? 'audio/webm'
+          : ''
+
+    const recorder = preferredMimeType
+      ? new MediaRecorder(stream, { mimeType: preferredMimeType })
+      : new MediaRecorder(stream)
+    mediaRecorderRef.current = recorder
+
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        recordedChunksRef.current.push(event.data)
+      }
+    }
+
+    recorder.onerror = () => {
+      console.error('[STT] MediaRecorder error')
+      setRecording(userId, false)
+      cleanupSttResources()
+    }
+
+    recorder.start()
+    console.info('[STT] MediaRecorder started', {
+      mimeType: recorder.mimeType,
       tracks: stream.getAudioTracks().length,
     })
-
-    const audioContext = new AudioContext()
-    audioContextRef.current = audioContext
-
-    if (audioContext.state !== 'running') {
-      await audioContext.resume()
-    }
-    console.info('[STT] AudioContext state', { state: audioContext.state })
-
-    const sourceSampleRate = audioContext.sampleRate
-    sttSourceSampleRateRef.current = sourceSampleRate
-    const sttUrl = buildSttApiUrl()
-    console.info('[STT] Opening websocket', {
-      url: sttUrl,
-      sourceSampleRate,
-      targetSampleRate: TARGET_STT_SAMPLE_RATE,
-    })
-    const socket = new WebSocket(sttUrl)
-    sttSocketRef.current = socket
-
-    socket.onmessage = (event) => {
-      try {
-        const payload = JSON.parse(String(event.data)) as SttRealtimeEvent
-        console.debug('[STT] Incoming event', {
-          messageType: payload.message_type ?? 'unknown',
-          hasText: Boolean(payload.text),
-        })
-
-        if (payload.message_type === 'error') {
-          console.error('[STT] Backend returned error', payload)
-          return
-        }
-
-        if (payload.message_type === 'uncommitted_transcript') {
-          console.debug('[STT] Partial transcript', { text: payload.text ?? '' })
-          sttPartialTextRef.current = payload.text ?? ''
-          applySttTranscriptToInput(sttPartialTextRef.current)
-          return
-        }
-
-        if (
-          payload.message_type === 'committed_transcript' ||
-          payload.message_type === 'committed_transcript_with_timestamps'
-        ) {
-          console.info('[STT] Committed transcript', { text: payload.text ?? '' })
-          sttPartialTextRef.current = payload.text ?? ''
-          applySttTranscriptToInput(sttPartialTextRef.current)
-        }
-
-        if (
-          payload.message_type &&
-          payload.message_type !== 'error' &&
-          payload.message_type !== 'uncommitted_transcript' &&
-          payload.message_type !== 'committed_transcript' &&
-          payload.message_type !== 'committed_transcript_with_timestamps'
-        ) {
-          console.info('[STT] Non-transcript event payload', payload)
-        }
-      } catch {
-        // Ignore non-JSON websocket frames.
-      }
-    }
-
-    socket.onerror = (event) => {
-      console.error('[STT] Websocket error event', event)
-      setRecording(userId, false)
-      cleanupSttResources()
-    }
-
-    socket.onclose = () => {
-      console.info('[STT] Websocket closed')
-      setRecording(userId, false)
-      cleanupSttResources()
-    }
-
-    await new Promise<void>((resolve, reject) => {
-      const handleOpen = () => {
-        socket.removeEventListener('open', handleOpen)
-        socket.removeEventListener('error', handleError)
-        console.info('[STT] Websocket connected')
-        resolve()
-      }
-      const handleError = () => {
-        socket.removeEventListener('open', handleOpen)
-        socket.removeEventListener('error', handleError)
-        console.error('[STT] Failed to connect websocket')
-        reject(new Error('Failed to connect to STT websocket'))
-      }
-
-      socket.addEventListener('open', handleOpen)
-      socket.addEventListener('error', handleError)
-    })
-
-    const sourceNode = audioContext.createMediaStreamSource(stream)
-    sourceNodeRef.current = sourceNode
-    const processor = audioContext.createScriptProcessor(4096, 1, 1)
-    processorNodeRef.current = processor
-
-    processor.onaudioprocess = (audioEvent) => {
-      const ws = sttSocketRef.current
-      if (!ws || ws.readyState !== WebSocket.OPEN) {
-        return
-      }
-
-      const channelData = audioEvent.inputBuffer.getChannelData(0)
-      const downsampled = downsampleToTargetRate(channelData, sttSourceSampleRateRef.current)
-      const pcmChunk = toPcm16(downsampled)
-      ws.send(pcmChunk)
-
-      sttChunkCountRef.current += 1
-      const now = Date.now()
-      if (
-        sttChunkCountRef.current === 1 ||
-        sttChunkCountRef.current % 25 === 0 ||
-        now - sttLastChunkLogAtRef.current > 5000
-      ) {
-        sttLastChunkLogAtRef.current = now
-        console.debug('[STT] Sent audio chunk', {
-          chunkCount: sttChunkCountRef.current,
-          sourceSamples: channelData.length,
-          sentSamples: downsampled.length,
-          sourceSampleRate: sttSourceSampleRateRef.current,
-          targetSampleRate: TARGET_STT_SAMPLE_RATE,
-          byteLength: pcmChunk.byteLength,
-        })
-      }
-    }
-
-    sourceNode.connect(processor)
-    processor.connect(audioContext.destination)
   }
 
-  const stopRealtimeStt = () => {
-    console.info('[STT] Stopping recording and sending commit request')
-    console.info('[STT] Stream summary before stop', {
-      chunksSent: sttChunkCountRef.current,
-    })
-
-    if (sttChunkCountRef.current === 0) {
-      console.warn('[STT] No audio chunks were sent. Check mic capture path.')
-    }
-
-    const socket = sttSocketRef.current
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ type: 'commit', close_after_commit: true }))
-
-      // Fallback in case server closes slowly and onclose is delayed.
-      sttCleanupTimeoutRef.current = window.setTimeout(() => {
-        console.warn('[STT] Close timeout fallback cleanup triggered')
-        cleanupSttResources()
-      }, 1200)
+  const stopRestStt = async () => {
+    const recorder = mediaRecorderRef.current
+    if (!recorder) {
+      cleanupSttResources()
       return
     }
 
-    cleanupSttResources()
+    console.info('[STT] Stopping MediaRecorder and uploading audio blob')
+
+    await new Promise<void>((resolve) => {
+      recorder.onstop = async () => {
+        try {
+          const audioBlob = new Blob(recordedChunksRef.current, {
+            type: recorder.mimeType || 'audio/webm',
+          })
+
+          if (audioBlob.size === 0) {
+            throw new Error('No audio was captured from the microphone.')
+          }
+
+          const transcript = await transcribeRecordedAudio(audioBlob)
+          applySttTranscriptToInput(transcript)
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : 'Speech-to-text failed after recording.'
+          addMessage(userId, {
+            role: 'agent',
+            content: `I could not transcribe that recording.\n\nError: ${message}`,
+            timestamp: new Date(),
+          })
+        } finally {
+          setRecording(userId, false)
+          cleanupSttResources()
+          resolve()
+        }
+      }
+
+      recorder.stop()
+    })
   }
 
   const handleMicToggle = async () => {
     if (isRecording) {
       console.info('[STT] Mic toggled OFF')
-      setRecording(userId, false)
-      stopRealtimeStt()
+      await stopRestStt()
       return
     }
 
-    if (!navigator.mediaDevices?.getUserMedia) {
-      console.warn('[STT] Browser does not support getUserMedia')
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
+      console.warn('[STT] Browser does not support audio recording')
       addMessage(userId, {
         role: 'agent',
-        content: 'Microphone access is not available in this browser.',
+        content: 'Microphone recording is not available in this browser.',
         timestamp: new Date(),
       })
       return
@@ -661,16 +493,15 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
     try {
       console.info('[STT] Mic toggled ON')
       inputBeforeSttRef.current = input
-      sttPartialTextRef.current = ''
       setRecording(userId, true)
-      await startRealtimeStt()
+      await startRestStt()
     } catch {
-      console.error('[STT] Failed to start realtime STT')
+      console.error('[STT] Failed to start REST STT recording')
       setRecording(userId, false)
       cleanupSttResources()
       addMessage(userId, {
         role: 'agent',
-        content: 'I could not start speech-to-text. Please check microphone permissions and backend availability.',
+        content: 'I could not start speech-to-text recording. Please check microphone permissions and backend availability.',
         timestamp: new Date(),
       })
     }
