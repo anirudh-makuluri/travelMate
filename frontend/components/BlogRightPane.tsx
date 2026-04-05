@@ -39,8 +39,9 @@ export const RightPane = ({ blog, onScrollDayChange }: RightPaneProps) => {
         })
 
         if (topMostVisible) {
-          setVisibleDay(topMostVisible.day)
-          onScrollDayChange(topMostVisible.day)
+          const visible: { day: number; ratio: number } = topMostVisible
+          setVisibleDay(visible.day)
+          onScrollDayChange(visible.day)
         }
       },
       {

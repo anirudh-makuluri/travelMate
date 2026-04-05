@@ -24,7 +24,7 @@ export const InteractiveDestinationMap = ({
   useEffect(() => {
     let attempts = 0
     const checkGoogleMaps = () => {
-      if (typeof window !== 'undefined' && window.google?.maps) {
+      if (typeof window !== 'undefined' && (window as any).google?.maps) {
         setIsLoading(false)
         setError(null)
       } else if (attempts < 50) {
@@ -40,7 +40,7 @@ export const InteractiveDestinationMap = ({
 
   // Initialize map
   useEffect(() => {
-    if (isLoading || !mapRef.current || !window.google?.maps) return
+    if (isLoading || !mapRef.current || !(window as any).google?.maps) return
 
     try {
       const mapCenter = {
@@ -48,7 +48,7 @@ export const InteractiveDestinationMap = ({
         lng: destinations[0]?.lng || 0,
       }
 
-      const googleMap = new window.google.maps.Map(mapRef.current, {
+      const googleMap = new (window as any).google.maps.Map(mapRef.current, {
         zoom: 7,
         center: mapCenter,
         mapTypeControl: false,
@@ -76,12 +76,12 @@ export const InteractiveDestinationMap = ({
       destinations.forEach((dest) => {
         const isActive = dest.dayNumber === activeDayInView
 
-        const marker = new window.google.maps.Marker({
+        const marker = new (window as any).google.maps.Marker({
           position: { lat: dest.lat, lng: dest.lng },
           map,
           title: `Day ${dest.dayNumber}: ${dest.name}`,
           icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
+            path: (window as any).google.maps.SymbolPath.CIRCLE,
             scale: isActive ? 14 : 10,
             fillColor: isActive ? '#14b8a6' : '#94a3b8',
             fillOpacity: 1,
@@ -106,7 +106,7 @@ export const InteractiveDestinationMap = ({
     if (!map || destinations.length === 0) return
 
     try {
-      const bounds = new window.google.maps.LatLngBounds()
+      const bounds = new (window as any).google.maps.LatLngBounds()
       destinations.forEach((dest) => {
         bounds.extend({ lat: dest.lat, lng: dest.lng })
       })
