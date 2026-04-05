@@ -79,12 +79,26 @@ The app expects:
   - How long a cached planner response stays valid
 - `PLANNER_CACHED_RESPONSE_DELAY_SECONDS`
   - Artificial delay applied before returning a cached response
+- `ELEVENLABS_STT_MODEL_ID`
+  - Optional speech-to-text model override for transcription
+- `ELEVENLABS_MUSIC_MODEL_ID`
+  - Optional music model override for theme-based track generation
+- `ELEVENLABS_MUSIC_DEFAULT_LENGTH_MS`
+  - Default music length used by the music helper
+- `ELEVENLABS_REALTIME_MODEL_ID`
+  - Default realtime transcription model used by the streaming path
 
 You should enable the relevant services in your Google project before running the app.
 
 ## Text to speech helper
 
 The `app/services/elevenlabs_tts.py` module exposes an async `elevenlabsTTS(text)` helper. It reads `ELEVENLABS_API_KEY` from `.env`, sends the text to ElevenLabs, and writes an `.mp3` file to `generated_audio/` by default.
+
+The same module also exposes `elevenlabsSTT(audio_path)`, which sends an audio file to ElevenLabs speech-to-text and returns the transcript text.
+
+It also exposes `elevenlabsMusic(theme, output_path)`, which generates an original theme-based music track and saves it as an `.mp3` file.
+
+For live transcription, the backend also exposes a WebSocket relay at `/api/v1/stt/stream`. It accepts audio chunks and forwards them to ElevenLabs Realtime Speech to Text.
 
 ## Run locally
 

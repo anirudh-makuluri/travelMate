@@ -20,6 +20,10 @@ class Settings(BaseModel):
     elevenlabs_api_key: SecretStr | None = None
     elevenlabs_voice_id: str = "21m00Tcm4TlvDq8ikWAM"
     elevenlabs_model_id: str = "eleven_multilingual_v2"
+    elevenlabs_stt_model_id: str = "scribe_v1"
+    elevenlabs_music_model_id: str = "music_v1"
+    elevenlabs_music_default_length_ms: int = 10000
+    elevenlabs_realtime_model_id: str = "scribe_v2_realtime"
     gemini_model: str = "gemini-2.5-flash"
 
     gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta"
@@ -91,6 +95,24 @@ class Settings(BaseModel):
             elevenlabs_model_id=_read_value(
                 "ELEVENLABS_MODEL_ID",
                 "eleven_multilingual_v2",
+                env_file_values,
+            ),
+            elevenlabs_stt_model_id=_read_value(
+                "ELEVENLABS_STT_MODEL_ID",
+                "scribe_v1",
+                env_file_values,
+            ),
+            elevenlabs_music_model_id=_read_value(
+                "ELEVENLABS_MUSIC_MODEL_ID",
+                "music_v1",
+                env_file_values,
+            ),
+            elevenlabs_music_default_length_ms=int(
+                _read_value("ELEVENLABS_MUSIC_DEFAULT_LENGTH_MS", "10000", env_file_values)
+            ),
+            elevenlabs_realtime_model_id=_read_value(
+                "ELEVENLABS_REALTIME_MODEL_ID",
+                "scribe_v2_realtime",
                 env_file_values,
             ),
             default_language_code=_read_value(
@@ -195,8 +217,13 @@ def _read_csv(value: str) -> list[str]:
 
 
 def _read_env_file() -> dict[str, str]:
-    env_path = Path(".env")
-    if not env_path.exists():
+    candidates = [
+        Path(__file__).resolve().parents[2] / ".env",
+        Path(".env"),
+    ]
+
+    env_path = next((path for path in candidates if path.exists()), None)
+    if env_path is None:
         return {}
 
     parsed: dict[str, str] = {}

@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes.health import router as health_router
+from app.api.routes.stt import router as stt_router
 from app.api.routes.planner import router as planner_router
 from app.core.config import get_settings
 from app.services.memory import InMemorySessionStore
@@ -39,4 +40,5 @@ app.add_middleware(
 )
 
 app.include_router(health_router)
+app.include_router(stt_router)
 app.include_router(planner_router)
