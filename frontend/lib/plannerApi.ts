@@ -14,6 +14,7 @@ export interface TravelPlanningRequest {
   currency_code: string
   transport_preference: TransportPreference
   session_id: string
+  referenced_blog_posts?: string[]
 }
 
 interface CompletenessAssessment {
@@ -126,6 +127,7 @@ export interface TripPlanResponse {
   planning_state?: PlanningState
   explanation: string
   warnings: string[]
+  referenced_blog_posts?: string[]
   itinerary: DayPlan[]
   candidates: CandidatePlaceLite[]
   budget: BudgetEstimate
@@ -507,6 +509,7 @@ const buildPresentationFallbackPlan = (payload: TravelPlanningRequest): TripPlan
       planning_state: planningState,
       explanation: 'Tell me the destination and I can keep the presentation moving with a quick draft.',
       warnings: ['Using a presentation fallback because the live planner is unavailable right now.'],
+      referenced_blog_posts: payload.referenced_blog_posts ?? [],
       itinerary: [],
       candidates: [],
       budget: {
@@ -539,6 +542,7 @@ const buildPresentationFallbackPlan = (payload: TravelPlanningRequest): TripPlan
       planning_state: planningState,
       explanation: 'Once you share the starting point, I can draft the fallback itinerary.',
       warnings: ['Using a presentation fallback because the live planner is unavailable right now.'],
+      referenced_blog_posts: payload.referenced_blog_posts ?? [],
       itinerary: [],
       candidates: MOCK_DESTINATIONS[destinationKey].candidateNames.map((name) => ({ name })),
       budget: {
@@ -572,6 +576,7 @@ const buildPresentationFallbackPlan = (payload: TravelPlanningRequest): TripPlan
     planning_state: planningState,
     explanation: `I put together a quick ${requestedDays}-day fallback plan from ${origin} to ${destinationConfig.destination}.`,
     warnings: ['Using a presentation fallback because the live planner is unavailable right now.'],
+    referenced_blog_posts: payload.referenced_blog_posts ?? [],
     itinerary: buildMockDayPlan(destinationKey, requestedDays),
     candidates: destinationConfig.candidateNames.map((name) => ({ name })),
     budget: {
@@ -976,6 +981,10 @@ const formatStops = (day: DayPlan): string[] => {
 export const formatTripPlanForChat = (plan: TripPlanResponse): string => {
   const parts: string[] = []
   const hasVisualItinerary = plan.itinerary.length > 0
+
+  if (plan.referenced_blog_posts?.length) {
+    parts.push(`Referenced trip memory:\n- ${plan.referenced_blog_posts.join('\n- ')}`)
+  }
 
   if (plan.follow_up_question) {
     parts.push(plan.follow_up_question)

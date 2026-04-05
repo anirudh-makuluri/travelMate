@@ -4,9 +4,6 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'TravelMate - Your Intelligent Travel Companion',
   description: 'Plan smarter trips by learning from your memories and your friends\' experiences.',
-  icons: {
-    icon: '/icon.svg',
-  },
 }
 
 export const viewport: Viewport = {

@@ -72,6 +72,7 @@ class TravelPlanningRequest(BaseModel):
     currency_code: str | None = None
     transport_preference: TransportPreference = TransportPreference.OPTIMIZE_TIME
     session_id: str | None = None
+    referenced_blog_posts: list[str] = Field(default_factory=list)
 
 
 class DestinationSelection(BaseModel):
@@ -236,4 +237,5 @@ class TripPlanResponse(BaseModel):
     budget: BudgetEstimate
     explanation: str
     warnings: list[str] = Field(default_factory=list)
+    referenced_blog_posts: list[str] = Field(default_factory=list)
     metadata: PlanMetadata

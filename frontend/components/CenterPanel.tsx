@@ -7,6 +7,10 @@ import { CompassIcon, LogOutIcon, MicIcon, SendIcon, UserIcon } from './Icons'
 import { ItineraryCard } from './ItineraryCard'
 import { cn } from '@/lib/utils'
 import {
+  getPlannerReferenceContextForMessage,
+  getPlannerReferencedBlogPostsForMessage,
+} from '@/lib/blogData'
+import {
   type CalendarExportResult,
   formatTripPlanForChat,
   getFollowUpOptions,
@@ -34,12 +38,25 @@ const formatPlannerPromptWithPreferences = (
   userMessage: string,
   preferences: Array<{ label: string; value: string }>
 ) => {
-  if (!preferences.length) {
-    return userMessage
+  const sections = [userMessage]
+
+  if (preferences.length) {
+    const preferenceSummary = preferences.map((preference) => `${preference.label}: ${preference.value}`).join('; ')
+    sections.push(`Traveler preferences: ${preferenceSummary}.`)
   }
 
-  const preferenceSummary = preferences.map((preference) => `${preference.label}: ${preference.value}`).join('; ')
-  return `${userMessage}\n\nTraveler preferences: ${preferenceSummary}.`
+  const plannerReferenceContext = getPlannerReferenceContextForMessage(userMessage)
+  if (plannerReferenceContext) {
+    sections.push(
+      [
+        'Use this trip memory as inspiration and grounding context when relevant.',
+        'Do not copy it exactly unless the user asks for a similar trip.',
+        plannerReferenceContext,
+      ].join('\n')
+    )
+  }
+
+  return sections.join('\n\n')
 }
 
 const cyclePacePreference = (currentValue?: string) => {
@@ -261,6 +278,7 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
         currency_code: 'USD',
         transport_preference: inferTransportPreference(userMessage),
         session_id: `web-${userId}`,
+        referenced_blog_posts: getPlannerReferencedBlogPostsForMessage(userMessage),
       })
 
       const mappedItinerary = mapTripPlanToItinerary(tripPlan)

@@ -11,6 +11,7 @@ from app.models.planning import (
     DayPlan,
     PlannedStop,
     PlanningState,
+    PlaceLocation,
     TransportPreference,
     TravelStep,
 )
@@ -131,6 +132,9 @@ class ItineraryOptimizer:
         self,
         planning_state: PlanningState,
         itinerary: list[DayPlan],
+        *,
+        arrival_transport_cost: float | None = None,
+        arrival_transport_label: str | None = None,
     ) -> BudgetEstimate:
         total = 0.0
         price_level_count = 0
@@ -144,11 +148,18 @@ class ItineraryOptimizer:
                 if stop.travel_from_previous and stop.travel_from_previous.cost_estimate is not None:
                     total += stop.travel_from_previous.cost_estimate
 
+        if arrival_transport_cost is not None:
+            total += arrival_transport_cost
+
         notes = [
             "This estimate uses place price levels as rough spend signals.",
             "Transport costs are estimated heuristically from route distance and mode.",
             "Lodging and ticket inventory are not priced exactly in this MVP.",
         ]
+        if arrival_transport_cost is not None and arrival_transport_label is not None:
+            notes.append(
+                f"Includes an estimated {arrival_transport_label} cost of {arrival_transport_cost:.2f} {planning_state.currency_code}."
+            )
         confidence = "medium" if price_level_count >= max(1, len(itinerary)) else "low"
 
         if planning_state.budget.amount is not None and total > planning_state.budget.amount:
@@ -160,6 +171,27 @@ class ItineraryOptimizer:
             confidence=confidence,
             notes=notes,
         )
+
+    def estimate_arrival_transport_cost(
+        self,
+        *,
+        origin_location: PlaceLocation | None,
+        destination_location: PlaceLocation | None,
+    ) -> tuple[float | None, str | None]:
+        if origin_location is None or destination_location is None:
+            return None, None
+
+        distance_km = self._haversine_distance(origin_location, destination_location) / 1000
+        if distance_km < 400:
+            return None, None
+
+        if distance_km >= 1200:
+            # Heuristic round-trip economy flight estimate.
+            estimated_cost = 120 + distance_km * 0.09
+            return round(estimated_cost, 2), "round-trip flight"
+
+        estimated_cost = max(30.0, distance_km * 0.12)
+        return round(estimated_cost, 2), "arrival transfer"
 
     def _score_candidate(
         self,

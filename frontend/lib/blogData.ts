@@ -124,3 +124,61 @@ export const calculateTripDuration = (startDate: string, endDate: string): numbe
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include the first day
   return diffDays;
 };
+
+const buildBlogReferenceSnippet = (blog: Blog, sourceLabel: string): string => {
+  const dayHighlights = blog.days
+    .slice(0, 3)
+    .map((day) => `Day ${day.dayNumber} - ${day.title}: ${day.content.replace(/\s+/g, ' ').trim()}`)
+    .join('\n');
+
+  return [
+    `${sourceLabel} reference trip for ${blog.destination}, ${blog.country}:`,
+    `Title: ${blog.title}`,
+    `Description: ${blog.description}`,
+    dayHighlights,
+  ].join('\n');
+};
+
+export const getPlannerReferenceContextForMessage = (message: string): string | null => {
+  const normalizedMessage = message.toLowerCase();
+  const references: string[] = [];
+
+  if (normalizedMessage.includes('japan')) {
+    references.push(
+      buildBlogReferenceSnippet(
+        blogDatabase.tokyo,
+        'Friend trip memory'
+      )
+    );
+  }
+
+  if (normalizedMessage.includes('vegas') || normalizedMessage.includes('las vegas')) {
+    references.push(
+      buildBlogReferenceSnippet(
+        blogDatabase.vegas,
+        'Previous personal trip memory'
+      )
+    );
+  }
+
+  if (!references.length) {
+    return null;
+  }
+
+  return references.join('\n\n');
+};
+
+export const getPlannerReferencedBlogPostsForMessage = (message: string): string[] => {
+  const normalizedMessage = message.toLowerCase();
+  const referencedBlogPosts: string[] = [];
+
+  if (normalizedMessage.includes('japan')) {
+    referencedBlogPosts.push(`Friend trip memory: ${blogDatabase.tokyo.title}`);
+  }
+
+  if (normalizedMessage.includes('vegas') || normalizedMessage.includes('las vegas')) {
+    referencedBlogPosts.push(`Previous personal trip memory: ${blogDatabase.vegas.title}`);
+  }
+
+  return referencedBlogPosts;
+};

@@ -293,6 +293,18 @@ class PlannerWorkflow:
             destination=destination,
             evaluated_modes=evaluated_modes,
         )
+        origin_place = None
+        destination_place = None
+        if origin:
+            origin_place = await self._resolve_location_point(
+                text_query=origin,
+                planning_state=planning_state,
+            )
+        if destination:
+            destination_place = await self._resolve_location_point(
+                text_query=destination,
+                planning_state=planning_state,
+            )
         selected_modes = self._selected_modes(route_map)
         primary_mode = selected_modes[0] if selected_modes else evaluated_modes[0]
 
@@ -301,7 +313,18 @@ class PlannerWorkflow:
             candidates=shortlist,
             route_map=route_map,
         )
-        budget = self.optimizer.estimate_budget(planning_state, itinerary)
+        arrival_transport_cost, arrival_transport_label = (
+            self.optimizer.estimate_arrival_transport_cost(
+                origin_location=origin_place.location if origin_place else None,
+                destination_location=destination_place.location if destination_place else None,
+            )
+        )
+        budget = self.optimizer.estimate_budget(
+            planning_state,
+            itinerary,
+            arrival_transport_cost=arrival_transport_cost,
+            arrival_transport_label=arrival_transport_label,
+        )
 
         itinerary_summary = [
             {
@@ -465,6 +488,7 @@ class PlannerWorkflow:
                 budget=budget,
                 explanation=explanation,
                 warnings=warnings,
+                referenced_blog_posts=state["request"].referenced_blog_posts,
                 metadata=metadata,
             )
             return {"response": response}
@@ -513,6 +537,7 @@ class PlannerWorkflow:
                 budget=budget,
                 explanation=explanation,
                 warnings=warnings,
+                referenced_blog_posts=state["request"].referenced_blog_posts,
                 metadata=metadata,
             )
             return {"response": response}
@@ -540,6 +565,7 @@ class PlannerWorkflow:
             budget=state["budget"],
             explanation=explanation,
             warnings=warnings,
+            referenced_blog_posts=state["request"].referenced_blog_posts,
             metadata=metadata,
         )
         return {"response": response}
@@ -756,6 +782,7 @@ class PlannerWorkflow:
     ) -> str:
         payload = {
             "prompt": request.prompt,
+            "referenced_blog_posts": request.referenced_blog_posts,
         }
         normalized = json.dumps(payload, sort_keys=True, ensure_ascii=True)
         return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
@@ -789,6 +816,7 @@ class PlannerWorkflow:
 
         response = cached_response.model_copy(deep=True)
         response.session_id = session_id
+        response.referenced_blog_posts = list(request.referenced_blog_posts)
         response.recent_context = self.memory_store.get_recent_turns(
             session_id,
             limit=max(1, self.settings.planner_response_context_limit),
