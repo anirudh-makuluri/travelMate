@@ -49,12 +49,29 @@ class TransportPreference(str, Enum):
     OPTIMIZE_MONEY = "optimize_for_money"
 
 
+class FeasibilityStatus(str, Enum):
+    FEASIBLE = "feasible"
+    NEEDS_MORE_INFO = "needs_more_info"
+    NOT_FEASIBLE = "not_feasible"
+
+
+class CompletenessStatus(str, Enum):
+    COMPLETE = "complete"
+    INCOMPLETE = "incomplete"
+
+
+class ConversationRole(str, Enum):
+    USER = "user"
+    ASSISTANT = "assistant"
+
+
 class TravelPlanningRequest(BaseModel):
     prompt: str = Field(min_length=3)
     language_code: str | None = None
     region_code: str | None = None
     currency_code: str | None = None
     transport_preference: TransportPreference = TransportPreference.OPTIMIZE_TIME
+    session_id: str | None = None
 
 
 class DestinationSelection(BaseModel):
@@ -179,6 +196,28 @@ class PlanMetadata(BaseModel):
     transport_preference: TransportPreference = TransportPreference.OPTIMIZE_TIME
     primary_transport_mode: TransportMode = TransportMode.WALK
     evaluated_transport_modes: list[TransportMode] = Field(default_factory=list)
+    session_turn_count: int = 0
+    workflow_engine: str = "sequential"
+
+
+class FeasibilityAssessment(BaseModel):
+    status: FeasibilityStatus = FeasibilityStatus.FEASIBLE
+    reason: str
+    missing_information: list[str] = Field(default_factory=list)
+    follow_up_question: str | None = None
+
+
+class CompletenessAssessment(BaseModel):
+    status: CompletenessStatus = CompletenessStatus.COMPLETE
+    reason: str
+    missing_information: list[str] = Field(default_factory=list)
+    follow_up_question: str | None = None
+
+
+class ConversationTurn(BaseModel):
+    role: ConversationRole
+    content: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class PlanningStateResponse(BaseModel):
@@ -186,6 +225,11 @@ class PlanningStateResponse(BaseModel):
 
 
 class TripPlanResponse(BaseModel):
+    session_id: str
+    completeness: CompletenessAssessment
+    feasibility: FeasibilityAssessment
+    follow_up_question: str | None = None
+    recent_context: list[ConversationTurn] = Field(default_factory=list)
     planning_state: PlanningState
     candidates: list[CandidatePlace] = Field(default_factory=list)
     itinerary: list[DayPlan] = Field(default_factory=list)

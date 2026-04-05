@@ -12,6 +12,7 @@ from app.models.planning import (
     TravelPlanningRequest,
     TripPlanResponse,
 )
+from app.services.memory import InMemorySessionStore
 from app.services.optimizer import ItineraryOptimizer
 from app.services.planner import PlannerService
 from app.services.query_builder import SearchQueryBuilder
@@ -23,11 +24,15 @@ router = APIRouter(prefix="/api/v1/planner", tags=["planner"])
 def get_planner_service(request: Request) -> PlannerService:
     settings = getattr(request.app.state, "settings", get_settings())
     http_client = getattr(request.app.state, "http_client", None)
+    memory_store = getattr(request.app.state, "memory_store", None)
     if http_client is None:
         http_client = httpx.AsyncClient(
             timeout=httpx.Timeout(settings.planner_request_timeout_seconds)
         )
         request.app.state.http_client = http_client
+    if memory_store is None:
+        memory_store = InMemorySessionStore()
+        request.app.state.memory_store = memory_store
 
     return PlannerService(
         settings=settings,
@@ -36,11 +41,18 @@ def get_planner_service(request: Request) -> PlannerService:
         routes_client=RoutesClient(http_client=http_client, settings=settings),
         query_builder=SearchQueryBuilder(settings=settings),
         optimizer=ItineraryOptimizer(settings=settings),
+        memory_store=memory_store,
     )
 
 
-@router.post("/planning-state", response_model=PlanningStateResponse)
-async def extract_planning_state(
+@router.post("/test-simple-gemini", response_model=PlanningStateResponse)
+@router.post(
+    "/planning-state",
+    response_model=PlanningStateResponse,
+    deprecated=True,
+    include_in_schema=False,
+)
+async def test_simple_gemini(
     payload: TravelPlanningRequest,
     planner_service: PlannerService = Depends(get_planner_service),
 ) -> PlanningStateResponse:

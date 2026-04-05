@@ -40,12 +40,15 @@ class BaseGoogleClient:
         headers: dict[str, str] | None = None,
         params: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        response = await self.http_client.post(
-            url,
-            json=json_payload,
-            headers=headers,
-            params=params,
-        )
+        try:
+            response = await self.http_client.post(
+                url,
+                json=json_payload,
+                headers=headers,
+                params=params,
+            )
+        except httpx.HTTPError as exc:
+            raise GoogleAPIError(f"Google API connection failed: {exc}") from exc
 
         if response.is_error:
             detail = response.text

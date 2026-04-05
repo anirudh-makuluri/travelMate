@@ -8,6 +8,6 @@ $body = @{
 
 Invoke-RestMethod `
   -Method Post `
-  -Uri "http://127.0.0.1:8000/api/v1/planner/planning-state" `
+  -Uri "http://127.0.0.1:8000/api/v1/planner/test-simple-gemini" `
   -ContentType "application/json" `
   -Body $body

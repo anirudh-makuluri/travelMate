@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from app.api.routes.health import router as health_router
 from app.api.routes.planner import router as planner_router
 from app.core.config import get_settings
+from app.services.memory import InMemorySessionStore
 
 
 @asynccontextmanager
@@ -17,6 +18,7 @@ async def lifespan(app: FastAPI):
     async with httpx.AsyncClient(timeout=timeout) as http_client:
         app.state.settings = settings
         app.state.http_client = http_client
+        app.state.memory_store = InMemorySessionStore()
         yield
 
 

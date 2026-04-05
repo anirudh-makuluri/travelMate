@@ -30,6 +30,9 @@ Preserve flexibility by separating:
 Return JSON only. Do not wrap the answer in markdown.
 Keep uncertainty explicit through confidence scores.
 Do not invent exact budgets, dates, or stop counts when the user did not state them.
+When the request is too vague to materialize an itinerary, put required missing items in unknowns
+(for example: destination, duration, budget, party_size) instead of silently defaulting.
+Prefer asking for follow-up information through unknowns rather than guessing.
 """.strip()
 
 
@@ -84,6 +87,8 @@ Defaults:
 - currency_code = "{currency_code}"
 - if duration is unspecified, selected_days can be null and note the likely range in min_days/max_days
 - if requested_stops is unspecified, leave it null
+- if a detail is required to materialize a practical itinerary, include it in unknowns with concise labels
+  (e.g., "destination", "duration", "budget", "party_size")
 """.strip()
 
         url = (
@@ -168,6 +173,61 @@ Requirements:
                 {
                     "role": "user",
                     "parts": [{"text": explanation_prompt}],
+                }
+            ],
+            "generationConfig": {"temperature": 0.4},
+        }
+        data = await self.post_json(
+            url,
+            json_payload=payload,
+            params={"key": self.require_gemini_api_key()},
+        )
+        return self._extract_text(data).strip()
+
+    async def approximate_itinerary_from_incomplete(
+        self,
+        *,
+        raw_request: str,
+        planning_state: PlanningState,
+        missing_information: list[str],
+    ) -> str:
+        if not self.settings.planner_enable_google_calls or not self.settings.gemini_api_key_value:
+            return self._fallback_approximate_itinerary(
+                planning_state=planning_state,
+                missing_information=missing_information,
+            )
+
+        approximation_prompt = f"""
+You are a travel planner assistant.
+The user has not provided all required details after multiple follow-up attempts.
+Create an approximate itinerary draft using only known details and explicit assumptions.
+
+User request:
+{raw_request}
+
+Planning state:
+{planning_state.model_dump_json(indent=2)}
+
+Missing information:
+{json.dumps(missing_information)}
+
+Requirements:
+- Provide a practical approximate itinerary (day-wise if possible)
+- Explicitly list assumptions
+- Explain uncertainty areas caused by missing details
+- End with a short "To improve this plan, share..." section
+- Keep the response concise and clear
+""".strip()
+
+        url = (
+            f"{self.settings.gemini_base_url}/models/"
+            f"{self.settings.gemini_model}:generateContent"
+        )
+        payload = {
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [{"text": approximation_prompt}],
                 }
             ],
             "generationConfig": {"temperature": 0.4},
@@ -352,7 +412,7 @@ Requirements:
             )
 
         assumptions = [
-            "Gemini was unavailable, so the planning state was created with heuristic parsing."
+            "yo code trash not work"
         ]
         if duration_days is None:
             assumptions.append(
@@ -409,6 +469,27 @@ Requirements:
             f"{preference_names}. Stops were grouped to keep daily travel reasonable, and the order favors "
             f"higher-match places before adding longer transfers. Review the assumptions section because the "
             f"explanation used the local fallback path rather than Gemini."
+        )
+
+    def _fallback_approximate_itinerary(
+        self,
+        *,
+        planning_state: PlanningState,
+        missing_information: list[str],
+    ) -> str:
+        days = (
+            planning_state.duration.selected_days
+            or planning_state.duration.max_days
+            or planning_state.duration.min_days
+            or 2
+        )
+        destination = planning_state.destination.value or "your destination"
+        missing = ", ".join(missing_information) if missing_information else "additional trip details"
+        return (
+            f"Approximate itinerary draft for {destination}: plan {days} day(s) with 2-4 balanced stops per day, "
+            "cluster nearby attractions, and prioritize highly rated places that match your top preferences. "
+            "This is a rough draft because key details are missing. "
+            f"To improve this plan, share: {missing}."
         )
 
     def _infer_budget_level(
