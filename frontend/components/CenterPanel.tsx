@@ -644,7 +644,10 @@ export const CenterPanel = ({ userId, userEmail, userName }: CenterPanelProps) =
                     )}
                   </div>
 
-                  {itinerary && message.role === 'agent' && itineraryInlineAfterMessageId === message.id && (
+                  {itinerary &&
+                    message.role === 'agent' &&
+                    itineraryInlineAfterMessageId === message.id &&
+                    isAgentMessageFullyRevealed(message) && (
                     <div className="mt-4 max-w-2xl rounded-[30px] border border-white/85 bg-white/58 p-2 shadow-[0_18px_34px_rgba(15,23,42,0.1)] backdrop-blur-sm">
                       <ItineraryCard
                         itinerary={itinerary}
